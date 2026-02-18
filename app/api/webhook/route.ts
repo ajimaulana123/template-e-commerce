@@ -125,8 +125,17 @@ export async function POST(req: Request) {
           messageData.mediaUrl = message.audio.id
         }
 
-    
-        console.log('✅ Message saved:', message.id)
+        // Cek apakah message sudah ada (untuk avoid duplicate)
+        const existingMessage = await prisma.message.findUnique({
+          where: { waMessageId: message.id },
+        })
+
+        if (!existingMessage) {
+          await prisma.message.create({ data: messageData })
+          console.log('✅ Message saved:', message.id)
+        } else {
+          console.log('⚠️ Message already exists:', message.id)
+        }
       }
     }
 
