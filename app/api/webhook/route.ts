@@ -13,10 +13,10 @@ export async function GET(req: Request) {
     console.log('Mode:', mode)
     console.log('Token received:', token ? 'yes' : 'no')
     console.log('Challenge:', challenge)
-    console.log('Expected token:', process.env.WABA_WEBHOOK_VERIFY_TOKEN ? 'set' : 'NOT SET')
+    console.log('Expected token:', process.env.WABA_ACCESS_TOKEN ? 'set' : 'NOT SET')
 
     // Verify mode and token
-    if (mode === 'subscribe' && token === process.env.WABA_WEBHOOK_VERIFY_TOKEN) {
+    if (mode === 'subscribe' && token === process.env.WABA_ACCESS_TOKEN) {
       console.log('✅ Webhook verified successfully')
       // IMPORTANT: Return plain text, not JSON
       return new NextResponse(challenge, { 
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
     console.log('❌ Webhook verification failed')
     console.log('Mode match:', mode === 'subscribe')
-    console.log('Token match:', token === process.env.WABA_WEBHOOK_VERIFY_TOKEN)
+    console.log('Token match:', token === process.env.WABA_ACCESS_TOKEN)
     
     return new NextResponse('Forbidden', { status: 403 })
   } catch (error: any) {
