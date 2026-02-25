@@ -123,35 +123,16 @@ export default function SecretRegisterPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Role</label>
-              <div className="flex flex-col gap-2">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="ADMIN"
-                    defaultChecked
-                    className="w-4 h-4"
-                  />
-                  <span>Admin</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="KARYAWAN"
-                    className="w-4 h-4"
-                  />
-                  <span>Karyawan</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="MAHASISWA"
-                    className="w-4 h-4"
-                  />
-                  <span>Mahasiswa</span>
-                </label>
+              <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-md">
+                <input
+                  type="radio"
+                  name="role"
+                  value="ADMIN"
+                  defaultChecked
+                  disabled
+                  className="w-4 h-4"
+                />
+                <span className="font-medium">Admin</span>
               </div>
             </div>
 

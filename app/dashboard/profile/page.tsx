@@ -10,11 +10,6 @@ export default async function ProfilePage() {
     redirect('/login')
   }
 
-  // Only KARYAWAN and ADMIN can access profile
-  if (session.role === 'MAHASISWA') {
-    redirect('/dashboard')
-  }
-
   const profile = await prisma.profile.findUnique({
     where: { userId: session.userId },
   })
@@ -26,7 +21,6 @@ export default async function ProfilePage() {
         
         <ProfileForm 
           profile={profile} 
-          userRole={session.role}
           userEmail={session.email}
         />
       </div>

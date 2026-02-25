@@ -7,7 +7,7 @@ import { z } from 'zod'
 const CreateUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['ADMIN', 'KARYAWAN', 'MAHASISWA']),
+  role: z.enum(['ADMIN', 'USER']),
 })
 
 export async function POST(request: Request) {

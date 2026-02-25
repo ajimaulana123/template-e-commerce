@@ -1,25 +1,7 @@
 import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
-import { z } from 'zod'
-
-const UpdateProfileSchema = z.object({
-  // Fields that KARYAWAN can edit
-  nik: z.string().optional().nullable(),
-  namaLengkap: z.string().optional().nullable(),
-  gelarDepan: z.string().optional().nullable(),
-  gelarBelakang: z.string().optional().nullable(),
-  telepon: z.string().optional().nullable(),
-  alamat: z.string().optional().nullable(),
-  tempatLahir: z.string().optional().nullable(),
-  tanggalLahir: z.string().optional().nullable(), // ISO date string
-  jenisKelamin: z.enum(['LAKI_LAKI', 'PEREMPUAN']).optional().nullable(),
-  fotoProfil: z.string().optional().nullable(),
-  
-  // Fields that only ADMIN can edit
-  jabatan: z.string().optional().nullable(),
-  statusKepegawaian: z.enum(['TETAP', 'TIDAK_TETAP']).optional().nullable(),
-})
+import { deleteAvatar, getFileNameFromUrl } from '@/lib/supabase'
 
 export async function PUT(request: Request) {
   try {
@@ -32,64 +14,45 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const validatedData = UpdateProfileSchema.safeParse(body)
-
-    if (!validatedData.success) {
+    
+    // Only accept null (for delete operation)
+    if (body.fotoProfil !== null) {
       return NextResponse.json(
-        { success: false, message: 'Data tidak valid', errors: validatedData.error.flatten() },
+        { success: false, message: 'Invalid operation. Use upload endpoint for new photos.' },
         { status: 400 }
       )
     }
-
-    const data = validatedData.data
 
     // Check if profile exists
     let profile = await prisma.profile.findUnique({
       where: { userId: session.userId },
     })
 
-    // Prepare update data based on role
-    const updateData: any = {}
-
-    // Fields that both KARYAWAN and ADMIN can edit
-    if (data.nik !== undefined) updateData.nik = data.nik
-    if (data.namaLengkap !== undefined) updateData.namaLengkap = data.namaLengkap
-    if (data.gelarDepan !== undefined) updateData.gelarDepan = data.gelarDepan
-    if (data.gelarBelakang !== undefined) updateData.gelarBelakang = data.gelarBelakang
-    if (data.telepon !== undefined) updateData.telepon = data.telepon
-    if (data.alamat !== undefined) updateData.alamat = data.alamat
-    if (data.tempatLahir !== undefined) updateData.tempatLahir = data.tempatLahir
-    if (data.tanggalLahir !== undefined) {
-      updateData.tanggalLahir = data.tanggalLahir ? new Date(data.tanggalLahir) : null
-    }
-    if (data.jenisKelamin !== undefined) updateData.jenisKelamin = data.jenisKelamin
-    if (data.fotoProfil !== undefined) updateData.fotoProfil = data.fotoProfil
-
-    // Fields that only ADMIN can edit
-    if (session.role === 'ADMIN') {
-      if (data.jabatan !== undefined) updateData.jabatan = data.jabatan
-      if (data.statusKepegawaian !== undefined) updateData.statusKepegawaian = data.statusKepegawaian
+    // Delete old file from storage
+    if (profile?.fotoProfil) {
+      console.log('Deleting photo:', profile.fotoProfil)
+      const oldFileName = getFileNameFromUrl(profile.fotoProfil)
+      console.log('Extracted filename:', oldFileName)
+      
+      if (oldFileName) {
+        const deleteResult = await deleteAvatar(oldFileName)
+        console.log('Delete result:', deleteResult)
+      }
     }
 
     if (profile) {
-      // Update existing profile
+      // Update existing profile - set to null
       profile = await prisma.profile.update({
         where: { userId: session.userId },
-        data: updateData,
-      })
-    } else {
-      // Create new profile
-      profile = await prisma.profile.create({
         data: {
-          userId: session.userId,
-          ...updateData,
+          fotoProfil: null,
         },
       })
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Profile berhasil diupdate',
+      message: 'Foto profil berhasil dihapus',
       profile,
     })
   } catch (error) {

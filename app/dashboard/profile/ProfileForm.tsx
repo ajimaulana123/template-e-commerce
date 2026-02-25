@@ -5,82 +5,98 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'
 
 type Profile = {
   id: string
-  nip: string | null
-  nik: string | null
-  namaLengkap: string | null
-  gelarDepan: string | null
-  gelarBelakang: string | null
-  jabatan: string | null
-  statusKepegawaian: string | null
-  telepon: string | null
-  alamat: string | null
-  tempatLahir: string | null
-  tanggalLahir: Date | null
-  jenisKelamin: string | null
   fotoProfil: string | null
-  tanggalMasuk: Date
 } | null
 
 export default function ProfileForm({ 
   profile, 
-  userRole,
   userEmail 
 }: { 
   profile: Profile
-  userRole: string
   userEmail: string
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [previewImage, setPreviewImage] = useState(profile?.fotoProfil || '')
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!validTypes.includes(file.type)) {
+      setError('Tipe file tidak valid. Hanya JPEG, PNG, WebP, dan GIF yang diperbolehkan.')
+      return
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Ukuran file melebihi 2MB.')
+      return
+    }
+
+    setUploading(true)
     setError('')
     setSuccess('')
 
-    const formData = new FormData(e.currentTarget)
-    const data: any = {
-      nik: formData.get('nik') || null,
-      namaLengkap: formData.get('namaLengkap') || null,
-      gelarDepan: formData.get('gelarDepan') || null,
-      gelarBelakang: formData.get('gelarBelakang') || null,
-      telepon: formData.get('telepon') || null,
-      alamat: formData.get('alamat') || null,
-      tempatLahir: formData.get('tempatLahir') || null,
-      tanggalLahir: formData.get('tanggalLahir') || null,
-      jenisKelamin: formData.get('jenisKelamin') || null,
-      fotoProfil: formData.get('fotoProfil') || null,
-    }
-
-    // Only ADMIN can edit these fields
-    if (userRole === 'ADMIN') {
-      data.jabatan = formData.get('jabatan') || null
-      data.statusKepegawaian = formData.get('statusKepegawaian') || null
-    }
-
     try {
-      const response = await fetch('/api/profile/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/profile/upload', {
+        method: 'POST',
+        body: formData,
       })
 
       const result = await response.json()
 
       if (result.success) {
-        setSuccess('Profile berhasil diupdate!')
+        setSuccess('Foto berhasil diupload!')
+        setPreviewImage(result.url)
         router.refresh()
       } else {
         setError(result.message)
       }
     } catch (error) {
-      setError('Terjadi kesalahan saat update profile.')
+      setError('Terjadi kesalahan saat upload foto.')
+    }
+
+    setUploading(false)
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Apakah Anda yakin ingin menghapus foto profil?')) return
+
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const response = await fetch('/api/profile/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fotoProfil: null }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setSuccess('Foto profil berhasil dihapus!')
+        setPreviewImage('')
+        router.refresh()
+      } else {
+        setError(result.message)
+      }
+    } catch (error) {
+      setError('Terjadi kesalahan saat menghapus foto.')
     }
 
     setLoading(false)
@@ -92,7 +108,7 @@ export default function ProfileForm({
         <CardTitle>Informasi Profile</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-6">
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
               {error}
@@ -104,196 +120,76 @@ export default function ProfileForm({
             </div>
           )}
 
-          {/* Read-only fields */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-500">Email</label>
-              <Input value={userEmail} disabled />
-            </div>
+          {/* Email (Read-only) */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-500">Email</label>
+            <Input value={userEmail} disabled className="bg-gray-50" />
+          </div>
 
-            {profile?.nip && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-500">NIP</label>
-                <Input value={profile.nip} disabled />
+          {/* Foto Profil Preview - Centered */}
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="relative">
+              {previewImage ? (
+                <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-gray-200 shadow-lg">
+                  <Image
+                    src={previewImage}
+                    alt="Profile"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-4 border-gray-200 shadow-lg">
+                  <span className="text-6xl font-bold text-white">
+                    {userEmail.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-semibold">{userEmail}</p>
+              <p className="text-sm text-gray-500">Foto Profil</p>
+            </div>
+          </div>
+
+          {/* Upload File */}
+          <div className="space-y-2">
+            <label htmlFor="fileUpload" className="text-sm font-medium">
+              Upload Foto Profil
+            </label>
+            <Input
+              id="fileUpload"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleFileUpload}
+              disabled={uploading}
+              className="cursor-pointer"
+            />
+            <p className="text-xs text-gray-500">
+              Format: JPEG, PNG, WebP, GIF. Maksimal 2MB.
+            </p>
+            {uploading && (
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span>Uploading...</span>
               </div>
             )}
           </div>
 
-          {/* Editable fields */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="nik" className="text-sm font-medium">
-                NIK
-              </label>
-              <Input
-                id="nik"
-                name="nik"
-                defaultValue={profile?.nik || ''}
-                placeholder="3201234567890123"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="namaLengkap" className="text-sm font-medium">
-                Nama Lengkap
-              </label>
-              <Input
-                id="namaLengkap"
-                name="namaLengkap"
-                defaultValue={profile?.namaLengkap || ''}
-                placeholder="John Doe"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="gelarDepan" className="text-sm font-medium">
-                Gelar Depan
-              </label>
-              <Input
-                id="gelarDepan"
-                name="gelarDepan"
-                defaultValue={profile?.gelarDepan || ''}
-                placeholder="Dr."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="gelarBelakang" className="text-sm font-medium">
-                Gelar Belakang
-              </label>
-              <Input
-                id="gelarBelakang"
-                name="gelarBelakang"
-                defaultValue={profile?.gelarBelakang || ''}
-                placeholder="S.Kom., M.T."
-              />
-            </div>
-          </div>
-
-          {/* Admin-only fields */}
-          {userRole === 'ADMIN' && (
-            <div className="grid grid-cols-2 gap-4 p-4 bg-red-50 rounded-lg">
-              <div className="space-y-2">
-                <label htmlFor="jabatan" className="text-sm font-medium text-red-700">
-                  Jabatan (Admin Only)
-                </label>
-                <Input
-                  id="jabatan"
-                  name="jabatan"
-                  defaultValue={profile?.jabatan || ''}
-                  placeholder="Manager"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="statusKepegawaian" className="text-sm font-medium text-red-700">
-                  Status Kepegawaian (Admin Only)
-                </label>
-                <select
-                  id="statusKepegawaian"
-                  name="statusKepegawaian"
-                  defaultValue={profile?.statusKepegawaian || ''}
-                  className="w-full px-3 py-2 border rounded-md"
-                >
-                  <option value="">Pilih Status</option>
-                  <option value="TETAP">Tetap</option>
-                  <option value="TIDAK_TETAP">Tidak Tetap</option>
-                </select>
-              </div>
-            </div>
+          {/* Delete Button */}
+          {profile?.fotoProfil && (
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={handleDelete}
+              disabled={loading || uploading}
+              className="w-full"
+            >
+              {loading ? 'Menghapus...' : 'Hapus Foto Profil'}
+            </Button>
           )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="telepon" className="text-sm font-medium">
-                Telepon
-              </label>
-              <Input
-                id="telepon"
-                name="telepon"
-                defaultValue={profile?.telepon || ''}
-                placeholder="08123456789"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="jenisKelamin" className="text-sm font-medium">
-                Jenis Kelamin
-              </label>
-              <select
-                id="jenisKelamin"
-                name="jenisKelamin"
-                defaultValue={profile?.jenisKelamin || ''}
-                className="w-full px-3 py-2 border rounded-md"
-              >
-                <option value="">Pilih Jenis Kelamin</option>
-                <option value="LAKI_LAKI">Laki-laki</option>
-                <option value="PEREMPUAN">Perempuan</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="alamat" className="text-sm font-medium">
-              Alamat
-            </label>
-            <textarea
-              id="alamat"
-              name="alamat"
-              defaultValue={profile?.alamat || ''}
-              placeholder="Jl. Contoh No. 123"
-              className="w-full px-3 py-2 border rounded-md min-h-[80px]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="tempatLahir" className="text-sm font-medium">
-                Tempat Lahir
-              </label>
-              <Input
-                id="tempatLahir"
-                name="tempatLahir"
-                defaultValue={profile?.tempatLahir || ''}
-                placeholder="Jakarta"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="tanggalLahir" className="text-sm font-medium">
-                Tanggal Lahir
-              </label>
-              <Input
-                id="tanggalLahir"
-                name="tanggalLahir"
-                type="date"
-                defaultValue={
-                  profile?.tanggalLahir
-                    ? new Date(profile.tanggalLahir).toISOString().split('T')[0]
-                    : ''
-                }
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="fotoProfil" className="text-sm font-medium">
-              URL Foto Profil
-            </label>
-            <Input
-              id="fotoProfil"
-              name="fotoProfil"
-              defaultValue={profile?.fotoProfil || ''}
-              placeholder="https://example.com/photo.jpg"
-            />
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Menyimpan...' : 'Simpan Profile'}
-          </Button>
-        </form>
+        </div>
       </CardContent>
     </Card>
   )

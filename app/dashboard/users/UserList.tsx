@@ -27,10 +27,8 @@ export default function UserList({ users }: { users: User[] }) {
     switch (role) {
       case 'ADMIN':
         return 'bg-red-100 text-red-700'
-      case 'KARYAWAN':
+      case 'USER':
         return 'bg-blue-100 text-blue-700'
-      case 'MAHASISWA':
-        return 'bg-green-100 text-green-700'
       default:
         return 'bg-gray-100 text-gray-700'
     }
@@ -166,32 +164,22 @@ export default function UserList({ users }: { users: User[] }) {
                         <label className="flex items-center space-x-1 cursor-pointer">
                           <input
                             type="radio"
+                            value="USER"
+                            checked={editRole === 'USER'}
+                            onChange={(e) => setEditRole(e.target.value)}
+                            className="w-3 h-3"
+                          />
+                          <span className="text-xs">User</span>
+                        </label>
+                        <label className="flex items-center space-x-1 cursor-pointer">
+                          <input
+                            type="radio"
                             value="ADMIN"
                             checked={editRole === 'ADMIN'}
                             onChange={(e) => setEditRole(e.target.value)}
                             className="w-3 h-3"
                           />
                           <span className="text-xs">Admin</span>
-                        </label>
-                        <label className="flex items-center space-x-1 cursor-pointer">
-                          <input
-                            type="radio"
-                            value="KARYAWAN"
-                            checked={editRole === 'KARYAWAN'}
-                            onChange={(e) => setEditRole(e.target.value)}
-                            className="w-3 h-3"
-                          />
-                          <span className="text-xs">Karyawan</span>
-                        </label>
-                        <label className="flex items-center space-x-1 cursor-pointer">
-                          <input
-                            type="radio"
-                            value="MAHASISWA"
-                            checked={editRole === 'MAHASISWA'}
-                            onChange={(e) => setEditRole(e.target.value)}
-                            className="w-3 h-3"
-                          />
-                          <span className="text-xs">Mahasiswa</span>
                         </label>
                       </div>
                     </div>
