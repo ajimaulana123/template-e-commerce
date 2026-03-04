@@ -3,6 +3,8 @@ import { verifySession } from '@/lib/session'
 import { logoutAction } from '@/app/actions/auth-actions'
 import prisma from '@/lib/prisma'
 import Image from 'next/image'
+import ChatBot from './ChatBot'
+import { ChatProvider } from './ChatContext'
 
 export default async function DashboardLayout({
   children,
@@ -20,7 +22,8 @@ export default async function DashboardLayout({
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ChatProvider>
+      <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -135,6 +138,8 @@ export default async function DashboardLayout({
         </aside>
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+      <ChatBot />
     </div>
+    </ChatProvider>
   )
 }
