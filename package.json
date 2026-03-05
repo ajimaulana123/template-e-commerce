@@ -11,6 +11,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "icons:generate": "node scripts/generate-pwa-icons.js",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
@@ -22,6 +23,7 @@
     "test:prodi:ui": "playwright test tests/prodi.spec.ts --ui"
   },
   "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@prisma/client": "^6.19.2",
     "@supabase/supabase-js": "^2.97.0",
     "ai": "^6.0.111",
@@ -32,7 +34,6 @@
     "jose": "^5.9.6",
     "lucide-react": "^0.460.0",
     "next": "^15.1.0",
-    "next-pwa": "^5.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
@@ -50,6 +51,7 @@
     "eslint-config-next": "^15.1.0",
     "postcss": "^8.4.0",
     "prisma": "^6.19.2",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.7.0"
   }
