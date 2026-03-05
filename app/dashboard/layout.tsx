@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma'
 import Image from 'next/image'
 import ChatBot from './ChatBot'
 import { ChatProvider } from './ChatContext'
+import InstallPrompt from '@/components/InstallPrompt'
 
 export default async function DashboardLayout({
   children,
@@ -138,6 +139,7 @@ export default async function DashboardLayout({
         </aside>
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+      <InstallPrompt />
       <ChatBot />
     </div>
     </ChatProvider>
