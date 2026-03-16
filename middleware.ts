@@ -4,11 +4,12 @@ import { verifySession } from './lib/session'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for API routes, static files
+  // Skip middleware for API routes, static files, and home page
   if (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
-    pathname.startsWith('/favicon.ico')
+    pathname.startsWith('/favicon.ico') ||
+    pathname === '/'
   ) {
     return NextResponse.next()
   }

@@ -1,22 +1,20 @@
+import { Suspense } from 'react'
 import ScrollBanner from '@/components/ScrollBanner'
 import MainNavbar from '@/components/MainNavbar'
-import HeroSlider from '@/components/HeroSlider'
-import HomePageClient from './HomePageClient'
+import CartPageClient from './CartPageClient'
 
-export default function Home() {
+export default function CartPage() {
   return (
     <>
       <ScrollBanner />
       <MainNavbar />
       <div className="min-h-screen bg-gray-50">
         <div className="pt-28 md:pt-24 lg:pt-28 xl:pt-32 2xl:pt-36">
-          {/* Hero Slider */}
           <div className="container mx-auto px-4">
-            <HeroSlider />
+            <Suspense fallback={<div>Loading...</div>}>
+              <CartPageClient />
+            </Suspense>
           </div>
-
-          {/* Main Content */}
-          <HomePageClient />
         </div>
       </div>
     </>

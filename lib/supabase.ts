@@ -86,10 +86,40 @@ export async function deleteAvatar(fileName: string) {
   }
 }
 
+// Helper function to delete product image (server-side with admin client)
+export async function deleteProductImage(fileName: string) {
+  try {
+    if (!supabaseAdmin) {
+      console.warn('Supabase admin client not configured, skipping delete')
+      return { success: false, error: 'Admin client not configured' }
+    }
+
+    console.log('Deleting product image from storage:', fileName)
+
+    const { error } = await supabaseAdmin.storage
+      .from('product-images')
+      .remove([fileName])
+
+    if (error) {
+      console.error('Delete error from Supabase:', error)
+      throw error
+    }
+
+    console.log('Product image deleted successfully:', fileName)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Delete error:', error)
+    return {
+      success: false,
+      error: error.message || 'Failed to delete product image',
+    }
+  }
+}
+
 // Helper to extract filename from URL
 export function getFileNameFromUrl(url: string): string | null {
   try {
-    // Handle Supabase Storage URL format
+    // Handle Supabase Storage URL format for avatars
     // Example: https://project.supabase.co/storage/v1/object/public/avatars/filename.jpg
     const match = url.match(/\/avatars\/(.+?)(?:\?|$)/)
     if (match && match[1]) {
@@ -105,6 +135,29 @@ export function getFileNameFromUrl(url: string): string | null {
     return null
   } catch (error) {
     console.error('Error extracting filename from URL:', error)
+    return null
+  }
+}
+
+// Helper to extract product image filename from URL
+export function getProductImageFileNameFromUrl(url: string): string | null {
+  try {
+    // Handle Supabase Storage URL format for product images
+    // Example: https://project.supabase.co/storage/v1/object/public/product-images/products/filename.jpg
+    const match = url.match(/\/product-images\/(.+?)(?:\?|$)/)
+    if (match && match[1]) {
+      return match[1]
+    }
+    
+    // Fallback: try to get last part after product-images/
+    const parts = url.split('/product-images/')
+    if (parts.length > 1) {
+      return parts[1].split('?')[0] // Remove query params if any
+    }
+    
+    return null
+  } catch (error) {
+    console.error('Error extracting product image filename from URL:', error)
     return null
   }
 }

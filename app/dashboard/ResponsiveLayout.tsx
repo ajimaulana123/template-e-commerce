@@ -178,30 +178,58 @@ export default function ResponsiveLayout({
             </Link>
 
             {session.role === 'ADMIN' && (
-              <Link
-                href="/dashboard/users"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/dashboard/users')
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                }`}
-                onClick={() => setIsSidebarOpen(false)}
-              >
-                <svg
-                  className="w-5 h-5 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <>
+                <Link
+                  href="/dashboard/users"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive('/dashboard/users')
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                  onClick={() => setIsSidebarOpen(false)}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>User Management</span>
-              </Link>
+                  <svg
+                    className="w-5 h-5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  <span>User Management</span>
+                </Link>
+
+                <Link
+                  href="/dashboard/categories"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    pathname?.startsWith('/dashboard/categories')
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <i className="fas fa-th-large w-5 h-5 flex items-center justify-center flex-shrink-0"></i>
+                  <span>Categories</span>
+                </Link>
+
+                <Link
+                  href="/dashboard/products"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    pathname?.startsWith('/dashboard/products')
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <i className="fas fa-box w-5 h-5 flex items-center justify-center flex-shrink-0"></i>
+                  <span>Products</span>
+                </Link>
+              </>
             )}
           </nav>
         </aside>

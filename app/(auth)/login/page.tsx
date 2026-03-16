@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { loginAction } from '@/app/actions/auth-actions'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnUrl = searchParams.get('returnUrl')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
@@ -20,13 +22,14 @@ export default function LoginPage() {
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {
-          router.push('/dashboard')
+          // Redirect to return URL or dashboard
+          router.push(returnUrl || '/dashboard')
         } else {
           setChecking(false)
         }
       })
       .catch(() => setChecking(false))
-  }, [router])
+  }, [router, returnUrl])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -37,7 +40,8 @@ export default function LoginPage() {
     const result = await loginAction(null, formData)
 
     if (result.success && result.role) {
-      router.push('/dashboard')
+      // Redirect to return URL or dashboard
+      router.push(returnUrl || '/dashboard')
       router.refresh()
     } else if (result.message) {
       setError(result.message)
@@ -102,9 +106,55 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Loading...' : 'Login'}
             </Button>
+
+            <div className="text-center text-sm">
+              <span className="text-muted-foreground">Don't have an account? </span>
+              <Link 
+                href={`/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Register here
+              </Link>
+            </div>
           </form>
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function LoginFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-xl sm:text-2xl text-center">Dashboard Template</CardTitle>
+          <p className="text-center text-sm text-muted-foreground">
+            Login ke akun Anda
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="animate-pulse space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+            <div className="animate-pulse space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+            <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginContent />
+    </Suspense>
   )
 }

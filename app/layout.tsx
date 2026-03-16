@@ -10,13 +10,13 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Dashboard Template',
-  description: 'Next.js Dashboard Template with Supabase & Prisma',
+  title: 'E-Commerce Jepang - Produk Berkualitas dari Jepang',
+  description: 'Temukan produk-produk berkualitas tinggi langsung dari Jepang. Dari teknologi terdepan hingga budaya tradisional yang autentik.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Dashboard',
+    title: 'E-Commerce Jepang',
   },
   formatDetection: {
     telephone: false,
@@ -47,6 +47,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </head>
       <body className={inter.className}>
         {process.env.NODE_ENV === 'development' && <PerformanceMonitor />}
