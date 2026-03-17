@@ -103,14 +103,30 @@ export default function CheckoutPageClient() {
     setProcessing(true)
     
     try {
-      // TODO: Implement actual checkout API
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
-      
-      alert('Order placed successfully! You will receive a confirmation email shortly.')
-      // TODO: Redirect to order confirmation page
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartItems,
+          shippingAddress,
+          paymentMethod,
+          subtotal: calculateSubtotal(),
+          shippingCost: calculateShipping(),
+          total: calculateTotal()
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to place order')
+      }
+
+      // Redirect to order confirmation page
+      window.location.href = `/orders/${data.order.id}/confirmation`
       
     } catch (error) {
-      alert('Failed to place order. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
     } finally {
       setProcessing(false)
     }

@@ -211,10 +211,11 @@ export default function ProfilePageClient() {
               </Button>
             </Link>
             
-            <Button variant="outline" className="w-full justify-start" disabled>
-              <span>Order History</span>
-              <span className="text-xs text-gray-500 ml-2">Coming Soon</span>
-            </Button>
+            <Link href="/orders">
+              <Button variant="outline" className="w-full justify-start">
+                <span>Order History</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

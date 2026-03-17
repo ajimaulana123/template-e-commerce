@@ -114,6 +114,15 @@ export default function MainNavbar() {
     }
   }
 
+  const handleNavigate = (path: string) => {
+    console.log('Navigating to:', path)
+    setProfileDropdownOpen(false)
+    // Use window.location for more reliable navigation
+    setTimeout(() => {
+      window.location.href = path
+    }, 100)
+  }
+
   return (
     <>
       <nav 
@@ -221,25 +230,34 @@ export default function MainNavbar() {
                         </div>
                         
                         {user.role === 'ADMIN' && (
-                          <Link href="/dashboard" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <button
+                            onClick={() => handleNavigate('/dashboard')}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                          >
                             <Settings className="w-4 h-4 mr-2" />
                             Dashboard
-                          </Link>
+                          </button>
                         )}
                         
-                        <Link href="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <button
+                          onClick={() => handleNavigate('/profile')}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                        >
                           <User className="w-4 h-4 mr-2" />
                           My Profile
-                        </Link>
+                        </button>
                         
-                        <Link href="/orders" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <button
+                          onClick={() => handleNavigate('/orders')}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                        >
                           <Package className="w-4 h-4 mr-2" />
                           My Orders
-                        </Link>
+                        </button>
                         
                         <button
                           onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 text-left"
                         >
                           <LogOut className="w-4 h-4 mr-2" />
                           Logout
@@ -319,25 +337,34 @@ export default function MainNavbar() {
                         </div>
                         
                         {user.role === 'ADMIN' && (
-                          <Link href="/dashboard" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <button
+                            onClick={() => handleNavigate('/dashboard')}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                          >
                             <Settings className="w-4 h-4 mr-2" />
                             Dashboard
-                          </Link>
+                          </button>
                         )}
                         
-                        <Link href="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <button
+                          onClick={() => handleNavigate('/profile')}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                        >
                           <User className="w-4 h-4 mr-2" />
                           My Profile
-                        </Link>
+                        </button>
                         
-                        <Link href="/orders" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <button
+                          onClick={() => handleNavigate('/orders')}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                        >
                           <Package className="w-4 h-4 mr-2" />
                           My Orders
-                        </Link>
+                        </button>
                         
                         <button
                           onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 text-left"
                         >
                           <LogOut className="w-4 h-4 mr-2" />
                           Logout

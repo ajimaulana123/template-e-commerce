@@ -229,6 +229,31 @@ export default function ResponsiveLayout({
                   <i className="fas fa-box w-5 h-5 flex items-center justify-center flex-shrink-0"></i>
                   <span>Products</span>
                 </Link>
+
+                <Link
+                  href="/dashboard/orders"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    pathname?.startsWith('/dashboard/orders')
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <svg
+                    className="w-5 h-5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                    />
+                  </svg>
+                  <span>Orders</span>
+                </Link>
               </>
             )}
           </nav>
