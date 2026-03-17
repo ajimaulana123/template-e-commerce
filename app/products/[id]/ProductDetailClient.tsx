@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChevronLeft, Heart, Share2, ShoppingCart, Plus, Minus } from 'lucide-react'
+import { ChevronLeft, Heart, Share2, ShoppingCart, Plus, Minus, MessageCircle } from 'lucide-react'
 import { addToCart } from '@/lib/cart'
+import { generateProductWhatsAppMessage, openWhatsApp } from '@/lib/whatsapp'
+import { useWishlist } from '../hooks/useWishlist'
 
 interface Product {
   id: string
@@ -37,6 +39,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
   const [selectedImage, setSelectedImage] = useState(0)
   const [addingToCart, setAddingToCart] = useState(false)
   const router = useRouter()
+  const { inWishlist, loading: wishlistLoading, toggleWishlist } = useWishlist(productId)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -124,6 +127,12 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
     } finally {
       setAddingToCart(false)
     }
+  }
+
+  const handleOrderWhatsApp = () => {
+    if (!product) return
+    const message = generateProductWhatsAppMessage(product, quantity)
+    openWhatsApp(message)
   }
 
   if (loading) {
@@ -334,10 +343,26 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
               </Button>
             </div>
 
+            {/* WhatsApp Order Button */}
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleOrderWhatsApp}
+              disabled={product.stock === 0}
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Order via WhatsApp
+            </Button>
+
             <div className="flex space-x-4">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Heart className="w-4 h-4 mr-2" />
-                Wishlist
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={`flex-1 ${inWishlist ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300'}`}
+                onClick={toggleWishlist}
+                disabled={wishlistLoading}
+              >
+                <Heart className={`w-4 h-4 mr-2 ${inWishlist ? 'fill-current' : ''}`} />
+                {wishlistLoading ? 'Loading...' : inWishlist ? 'In Wishlist' : 'Add to Wishlist'}
               </Button>
               <Button variant="outline" size="sm" className="flex-1">
                 <Share2 className="w-4 h-4 mr-2" />

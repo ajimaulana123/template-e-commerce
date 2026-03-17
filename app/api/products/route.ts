@@ -7,9 +7,24 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoryId')
+    const search = searchParams.get('search')
+
+    // Build where clause
+    const where: any = {}
+    
+    if (categoryId) {
+      where.categoryId = categoryId
+    }
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ]
+    }
 
     const products = await prisma.product.findMany({
-      where: categoryId ? { categoryId } : {},
+      where,
       include: { category: true },
       orderBy: { createdAt: 'desc' }
     })

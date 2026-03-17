@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 interface Category {
   id: string
   name: string
@@ -17,7 +19,7 @@ export default function CategoryIcons({ categories }: CategoryIconsProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center overflow-x-auto pb-2">
           {categories.map((category) => (
-            <a
+            <Link
               key={category.id}
               href={`/products?category=${category.slug}`}
               className="flex flex-col items-center space-y-2 min-w-[80px] hover:opacity-80 transition-opacity"
@@ -26,7 +28,7 @@ export default function CategoryIcons({ categories }: CategoryIconsProps) {
                 <i className={`${category.icon || 'fas fa-th'} text-xl text-gray-600`}></i>
               </div>
               <span className="text-xs text-gray-700 text-center">{category.name}</span>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

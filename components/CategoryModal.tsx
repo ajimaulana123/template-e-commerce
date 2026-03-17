@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ export default function CategoryModal({ isOpen, onClose }: CategoryModalProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<string>('')
+  const router = useRouter()
 
   useEffect(() => {
     if (isOpen) {
@@ -147,12 +149,7 @@ export default function CategoryModal({ isOpen, onClose }: CategoryModalProps) {
                       const category = categories.find(cat => cat.id === activeTab)
                       if (category) {
                         onClose()
-                        // Use client-side navigation without page refresh
-                        window.history.pushState({}, '', `/products?category=${category.slug}`)
-                        // Trigger a custom event to notify ProductsPageClient
-                        window.dispatchEvent(new CustomEvent('categoryChange', { 
-                          detail: { category, slug: category.slug } 
-                        }))
+                        router.push(`/products?category=${category.slug}`)
                       }
                     }}
                     className="bg-orange-500 hover:bg-orange-600 text-white"
@@ -179,12 +176,7 @@ export default function CategoryModal({ isOpen, onClose }: CategoryModalProps) {
           <Button 
             onClick={() => {
               onClose()
-              // Use client-side navigation without page refresh
-              window.history.pushState({}, '', '/products')
-              // Trigger a custom event to notify ProductsPageClient
-              window.dispatchEvent(new CustomEvent('categoryChange', { 
-                detail: { category: null, slug: null } 
-              }))
+              router.push('/products')
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >

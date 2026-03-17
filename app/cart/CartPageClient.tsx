@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react'
+import { Plus, Minus, Trash2, ShoppingBag, MessageCircle } from 'lucide-react'
 import { getCart, updateCartItem, removeFromCart } from '@/lib/cart'
+import { generateCartWhatsAppMessage, openWhatsApp } from '@/lib/whatsapp'
 
 interface CartItem {
   id: string
@@ -100,6 +101,11 @@ export default function CartPageClient() {
     const subtotal = calculateSubtotal()
     const shipping = subtotal > 500000 ? 0 : 15000 // Free shipping over 500k
     return subtotal + shipping
+  }
+
+  const handleOrderWhatsApp = () => {
+    const message = generateCartWhatsAppMessage(cartItems)
+    openWhatsApp(message)
   }
 
   if (loading) {
@@ -284,6 +290,14 @@ export default function CartPageClient() {
                 Proceed to Checkout
               </Button>
             </Link>
+
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
+              onClick={handleOrderWhatsApp}
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Order via WhatsApp
+            </Button>
             
             <Link href="/products">
               <Button variant="outline" className="w-full">
