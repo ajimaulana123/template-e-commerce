@@ -45,7 +45,7 @@ export default function CategoryModal({ isOpen, onClose }: CategoryModalProps) {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch categories:', error)
+      // Silent fail - failed to fetch categories
     } finally {
       setLoading(false)
     }

@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import { PrismaClient } from '@prisma/client'
+import { logger } from '@/lib/logger'
 
 // Create fresh Prisma instance to ensure latest schema
 const prisma = new PrismaClient()
-
-// Debug: Check if cartItem model exists
-console.log('Available Prisma models:', Object.keys(prisma))
 
 // GET user cart
 export async function GET() {
@@ -18,7 +16,7 @@ export async function GET() {
 
     // Check if cartItem model is available
     if (!prisma.cartItem) {
-      console.error('CartItem model not available in Prisma client')
+      logger.error('CartItem model not available in Prisma client')
       return NextResponse.json({ error: 'Cart service unavailable' }, { status: 503 })
     }
 
@@ -34,9 +32,10 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
+    logger.debug('Cart items fetched', { userId: session.userId, itemCount: cartItems.length })
     return NextResponse.json(cartItems)
   } catch (error) {
-    console.error('Get cart error:', error)
+    logger.error('Failed to fetch cart', error)
     return NextResponse.json({ error: 'Failed to fetch cart' }, { status: 500 })
   }
 }
@@ -81,8 +80,7 @@ export async function POST(request: Request) {
         }
       })
     } catch (error) {
-      console.error('Error finding existing cart item:', error)
-      console.error('Prisma cartItem model available:', !!prisma.cartItem)
+      logger.error('Database error while checking cart item', error)
       return NextResponse.json({ error: 'Database error - cart model not available' }, { status: 500 })
     }
 
@@ -107,6 +105,12 @@ export async function POST(request: Request) {
           }
         }
       })
+      
+      logger.info('Cart item updated', { 
+        userId: session.userId, 
+        productId, 
+        newQuantity 
+      })
     } else {
       // Create new cart item
       cartItem = await prisma.cartItem.create({
@@ -123,11 +127,17 @@ export async function POST(request: Request) {
           }
         }
       })
+      
+      logger.info('Cart item created', { 
+        userId: session.userId, 
+        productId, 
+        quantity 
+      })
     }
 
     return NextResponse.json(cartItem, { status: 201 })
   } catch (error) {
-    console.error('Add to cart error:', error)
+    logger.error('Failed to add to cart', error)
     return NextResponse.json({ error: 'Failed to add to cart' }, { status: 500 })
   }
 }

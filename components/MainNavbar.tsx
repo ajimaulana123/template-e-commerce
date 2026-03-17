@@ -52,7 +52,7 @@ export default function MainNavbar() {
           setUser(data.user)
         }
       } catch (error) {
-        console.error('Auth check failed:', error)
+        // Silent fail - auth check failed
       } finally {
         setLoading(false)
       }
@@ -109,7 +109,8 @@ export default function MainNavbar() {
       setCartCount(0)
       window.location.href = '/'
     } catch (error) {
-      console.error('Logout failed:', error)
+      // Silent fail - logout failed, redirect anyway
+      window.location.href = '/'
     }
   }
 

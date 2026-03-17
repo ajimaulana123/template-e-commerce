@@ -77,7 +77,7 @@ export default function ChatBot() {
         { role: 'assistant', content: data.message },
       ])
     } catch (error) {
-      console.error('Error:', error)
+      // Silent fail - chat error
       setMessages((prev) => [
         ...prev,
         {

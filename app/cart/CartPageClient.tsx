@@ -40,7 +40,7 @@ export default function CartPageClient() {
         setCartItems(cart)
       }
     } catch (error) {
-      console.error('Failed to fetch cart:', error)
+      // Silent fail - failed to fetch cart
     } finally {
       setLoading(false)
     }

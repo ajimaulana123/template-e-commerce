@@ -13,12 +13,8 @@ export default function PerformanceMonitor() {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'navigation') {
             const navEntry = entry as PerformanceNavigationTiming
-            console.log('⚡ Navigation Performance:', {
-              page: pathname,
-              loadTime: Math.round(navEntry.loadEventEnd - navEntry.fetchStart),
-              domContentLoaded: Math.round(navEntry.domContentLoadedEventEnd - navEntry.fetchStart),
-              firstPaint: Math.round(navEntry.responseEnd - navEntry.fetchStart),
-            })
+            // Performance monitoring - data not logged for security
+            // Metrics are collected but not exposed to console
           }
         }
       })

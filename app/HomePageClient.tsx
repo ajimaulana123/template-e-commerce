@@ -53,7 +53,7 @@ export default function HomePageClient() {
           setProducts(productsData)
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error)
+        // Silent fail - failed to fetch data
       } finally {
         setLoading(false)
       }

@@ -62,7 +62,7 @@ export const useCategorySync = (initialCategories: Category[]) => {
         return freshCategories
       }
     } catch (error) {
-      console.error('Failed to refresh categories:', error)
+      // Silent fail - failed to refresh categories
     }
     return categories
   }, [categories, notifyListeners])

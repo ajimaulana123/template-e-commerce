@@ -37,7 +37,7 @@ export default function ProfilePageClient() {
         setUser(data.user)
       }
     } catch (error) {
-      console.error('Failed to fetch profile:', error)
+      // Silent fail - failed to fetch profile
     } finally {
       setLoading(false)
     }

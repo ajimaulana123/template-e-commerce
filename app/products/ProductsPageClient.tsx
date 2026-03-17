@@ -76,7 +76,7 @@ export default function ProductsPageClient({ categorySlug }: ProductsPageClientP
           }
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error)
+        // Silent fail - failed to fetch data
       } finally {
         setLoading(false)
       }
@@ -115,7 +115,7 @@ export default function ProductsPageClient({ categorySlug }: ProductsPageClientP
         setProducts(productsData)
       }
     } catch (error) {
-      console.error('Failed to fetch products:', error)
+      // Silent fail - failed to fetch products
     } finally {
       setProductsLoading(false)
     }

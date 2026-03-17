@@ -6,6 +6,7 @@ import {
   CategoriesApiResponse 
 } from './types'
 import { ERROR_MESSAGES } from './constants'
+import { logger, createSecureError, ErrorCodes } from '@/lib/logger'
 
 // Base API configuration
 const API_BASE = '/api/categories'
@@ -83,11 +84,13 @@ export class CategoryService {
   // Get all categories
   static async getCategories(): Promise<Category[]> {
     try {
+      logger.debug('Fetching categories')
       // API returns categories array directly
       const categories = await apiClient.get<Category[]>(API_BASE)
+      logger.info('Categories fetched successfully', { count: categories.length })
       return categories
     } catch (error) {
-      console.error('CategoryService.getCategories:', error)
+      logger.error('Failed to fetch categories', error)
       throw new Error(ERROR_MESSAGES.NETWORK_ERROR)
     }
   }
@@ -95,11 +98,13 @@ export class CategoryService {
   // Get single category
   static async getCategory(id: string): Promise<Category> {
     try {
+      logger.debug('Fetching category', { categoryId: id })
       // API returns category object directly
       const category = await apiClient.get<Category>(`${API_BASE}/${id}`)
+      logger.info('Category fetched successfully', { categoryId: id, categoryName: category.name })
       return category
     } catch (error) {
-      console.error('CategoryService.getCategory:', error)
+      logger.error('Failed to fetch category', error, { categoryId: id })
       throw new Error(ERROR_MESSAGES.NETWORK_ERROR)
     }
   }
@@ -107,19 +112,21 @@ export class CategoryService {
   // Create category
   static async createCategory(data: CreateCategoryData): Promise<Category> {
     try {
-      console.log('CategoryService.createCategory - Request data:', data)
+      logger.debug('Creating category')
       
       // API returns created category directly
       const category = await apiClient.post<Category>(API_BASE, data)
       
-      console.log('CategoryService.createCategory - Response:', category)
+      logger.info('Category created successfully', { 
+        categoryId: category.id, 
+        categoryName: category.name,
+        categorySlug: category.slug 
+      })
       return category
     } catch (error) {
-      console.error('CategoryService.createCategory - Error:', error)
+      logger.error('Failed to create category', error)
       
       if (error instanceof Error) {
-        console.error('CategoryService.createCategory - Error message:', error.message)
-        
         // Handle specific error cases
         if (error.message.includes('duplicate') || error.message.includes('unique') || error.message.includes('already exists')) {
           throw new Error(ERROR_MESSAGES.DUPLICATE_NAME)
@@ -140,11 +147,16 @@ export class CategoryService {
   // Update category
   static async updateCategory(id: string, data: UpdateCategoryData): Promise<Category> {
     try {
+      logger.debug('Updating category', { categoryId: id })
       // API returns updated category directly
       const category = await apiClient.put<Category>(`${API_BASE}/${id}`, data)
+      logger.info('Category updated successfully', { 
+        categoryId: id, 
+        categoryName: category.name 
+      })
       return category
     } catch (error) {
-      console.error('CategoryService.updateCategory:', error)
+      logger.error('Failed to update category', error, { categoryId: id })
       
       if (error instanceof Error) {
         if (error.message.includes('duplicate') || error.message.includes('unique')) {
@@ -170,10 +182,12 @@ export class CategoryService {
   // Delete category
   static async deleteCategory(id: string): Promise<void> {
     try {
+      logger.debug('Deleting category', { categoryId: id })
       // API returns success message or throws error
       await apiClient.delete(`${API_BASE}/${id}`)
+      logger.info('Category deleted successfully', { categoryId: id })
     } catch (error) {
-      console.error('CategoryService.deleteCategory:', error)
+      logger.error('Failed to delete category', error, { categoryId: id })
       
       if (error instanceof Error) {
         if (error.message.includes('not found')) {
@@ -201,7 +215,7 @@ export class CategoryService {
         cat.id !== excludeId
       )
     } catch (error) {
-      console.error('CategoryService.checkNameExists:', error)
+      logger.error('Failed to check category name existence', error, { name })
       // If we can't check, assume it doesn't exist to allow the API to handle duplicates
       return false
     }
@@ -216,7 +230,7 @@ export class CategoryService {
         cat.id !== excludeId
       )
     } catch (error) {
-      console.error('CategoryService.checkSlugExists:', error)
+      logger.error('Failed to check category slug existence', error, { slug })
       // If we can't check, assume it doesn't exist to allow the API to handle duplicates
       return false
     }

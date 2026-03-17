@@ -47,10 +47,10 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
           const data = await response.json()
           setProduct(data)
         } else {
-          console.error('Product not found')
+          // Product not found - silent fail
         }
       } catch (error) {
-        console.error('Failed to fetch product:', error)
+        // Silent fail - failed to fetch product
       } finally {
         setLoading(false)
       }

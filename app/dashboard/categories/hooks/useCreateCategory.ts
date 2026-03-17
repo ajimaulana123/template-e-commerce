@@ -14,6 +14,7 @@ import {
 } from '../validation'
 import { SUCCESS_MESSAGES } from '../constants'
 import { useCategoryContext } from '../CategoryContext'
+import { logger } from '@/lib/logger'
 
 export const useCreateCategory = () => {
   const router = useRouter()
@@ -63,7 +64,7 @@ export const useCreateCategory = () => {
 
   // Submit handler with optimistic update
   const submitForm = useCallback(async () => {
-    console.log('submitForm - Starting with formData:', formData)
+    logger.debug('Category creation started')
     
     if (!checkRateLimit()) {
       updateState({ error: 'Terlalu banyak permintaan. Silakan tunggu sebentar.' })
@@ -74,20 +75,19 @@ export const useCreateCategory = () => {
 
     try {
       const sanitizedData = sanitizeFormData(formData)
-      console.log('submitForm - Sanitized data:', sanitizedData)
       
       const validationErrors = validateCategoryForm(sanitizedData)
-      console.log('submitForm - Validation errors:', validationErrors)
       
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors)
         updateState({ error: 'Mohon perbaiki kesalahan pada form' })
+        logger.warn('Category validation failed', { errorCount: Object.keys(validationErrors).length })
         return false
       }
 
-      console.log('submitForm - Creating category...')
+      logger.debug('Creating category')
       const newCategory = await CategoryService.createCategory(sanitizedData)
-      console.log('submitForm - Category created successfully:', newCategory)
+      logger.info('Category created successfully', { categoryId: newCategory.id, categoryName: newCategory.name })
       
       // Optimistic update - add to context immediately
       categoryActions.addCategory(newCategory)
@@ -101,7 +101,7 @@ export const useCreateCategory = () => {
       
       return true
     } catch (error) {
-      console.error('submitForm - Error caught:', error)
+      logger.error('Category creation failed', error)
       
       // Handle specific API errors
       if (error instanceof Error) {
