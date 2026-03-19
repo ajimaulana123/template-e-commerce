@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger'
 // GET single order
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await verifySession()
@@ -14,8 +14,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         items: {
           include: {
@@ -23,7 +25,7 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
-                image: true,
+                images: true,
                 category: {
                   select: {
                     name: true
@@ -60,7 +62,7 @@ export async function GET(
 // PUT update order status (admin only)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await verifySession()
@@ -72,11 +74,18 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await request.json()
     const { status, paymentStatus } = body
 
+    // Validate status
+    const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED']
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+    }
+
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(status && { status }),
         ...(paymentStatus && { paymentStatus })
@@ -100,7 +109,7 @@ export async function PUT(
 // DELETE cancel order
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await verifySession()
@@ -108,8 +117,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { items: true }
     })
 
@@ -144,7 +155,7 @@ export async function DELETE(
 
       // Update order status
       await tx.order.update({
-        where: { id: params.id },
+        where: { id },
         data: { status: 'CANCELLED' }
       })
     })

@@ -4,9 +4,11 @@ export interface Product {
   description: string | null
   price: number
   originalPrice: number | null
-  image: string
+  images: string[] // Changed from image to images array
   stock: number
   sold: number
+  rating: number
+  totalReviews: number
   badge: string | null
   category: {
     id: string

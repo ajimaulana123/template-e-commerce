@@ -168,7 +168,7 @@ export default function CartPageClient() {
                 {/* Product Image */}
                 <Link href={`/products/${item.product.id}`}>
                   <img
-                    src={item.product.image}
+                    src={item.product.images?.[0] || '/placeholder.png'}
                     alt={item.product.name}
                     className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80"
                   />

@@ -39,7 +39,7 @@ export default function ProductGrid({ title, icon, products, columns = 4 }: Prod
               <CardHeader className="p-0">
                 <div className="relative overflow-hidden">
                   <img 
-                    src={product.image} 
+                    src={product.images?.[0] || '/placeholder.png'} 
                     alt={product.name}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -52,16 +52,14 @@ export default function ProductGrid({ title, icon, products, columns = 4 }: Prod
               </CardHeader>
               <CardContent className="p-3">
                 <CardTitle className="text-sm mb-2 line-clamp-2 h-10">{product.name}</CardTitle>
-                {product.rating && (
-                  <div className="flex items-center mb-2">
-                    {Array.from({ length: 5 }, (_, j) => (
-                      <i key={j} className={`fas fa-star text-xs ${j < product.rating! ? 'text-yellow-400' : 'text-gray-300'}`}></i>
-                    ))}
-                    {product.sold && (
-                      <span className="text-xs text-gray-500 ml-2">({product.sold})</span>
-                    )}
-                  </div>
-                )}
+                <div className="flex items-center mb-2">
+                  {Array.from({ length: 5 }, (_, j) => (
+                    <i key={j} className={`fas fa-star text-xs ${j < (product.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}`}></i>
+                  ))}
+                  {product.sold && (
+                    <span className="text-xs text-gray-500 ml-2">({product.sold})</span>
+                  )}
+                </div>
                 <div className="space-y-1">
                   <div className="text-lg font-bold text-gray-900">{product.price}</div>
                   {product.originalPrice && (

@@ -23,7 +23,10 @@ export default function MainNavbar() {
     <>
       <nav 
         className={cn(
-          'fixed left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm transition-all duration-300 ease-in-out',
+          'fixed left-0 right-0 z-40 bg-white transition-all duration-300 ease-in-out',
+          // Single border at bottom
+          'border-b-2 border-b-gray-300',
+          'shadow-md',
           bannerVisible ? 'top-12 md:top-10 xl:top-12 2xl:top-14' : 'top-0'
         )}
       >

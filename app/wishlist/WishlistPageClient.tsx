@@ -169,7 +169,7 @@ export default function WishlistPageClient() {
               <Link href={`/products/${item.product.id}`}>
                 <div className="relative h-48">
                   <img
-                    src={item.product.image}
+                    src={item.product.images?.[0] || '/placeholder.png'}
                     alt={item.product.name}
                     className="w-full h-full object-cover"
                   />

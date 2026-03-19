@@ -6,48 +6,77 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Category } from './types'
+import { X, GripVertical } from 'lucide-react'
 
 export default function CreateProductForm({ categories }: { categories: Category[] }) {
   const router = useRouter()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const [imageMode, setImageMode] = useState<'url' | 'upload'>('url')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>('')
+  const [imageMode, setImageMode] = useState<'url' | 'upload'>('upload')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [currentUrl, setCurrentUrl] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     originalPrice: '',
-    image: '',
     categoryId: categories[0]?.id || '',
     stock: '0',
     badge: ''
   })
 
-  const handleImageUpload = async (file: File) => {
-    setImageFile(file)
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string)
-    }
-    reader.readAsDataURL(file)
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files) return
+    
+    const newFiles = Array.from(files)
+    setImageFiles(prev => [...prev, ...newFiles])
+    
+    // Generate previews
+    newFiles.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string])
+      }
+      reader.readAsDataURL(file)
+    })
   }
 
-  const uploadImageToSupabase = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
+  const removeImage = (index: number) => {
+    if (imageMode === 'upload') {
+      setImageFiles(prev => prev.filter((_, i) => i !== index))
+      setImagePreviews(prev => prev.filter((_, i) => i !== index))
+    } else {
+      setImageUrls(prev => prev.filter((_, i) => i !== index))
+    }
+  }
 
-    const response = await fetch('/api/products/upload', {
-      method: 'POST',
-      body: formData
+  const addUrlImage = () => {
+    if (currentUrl.trim()) {
+      setImageUrls(prev => [...prev, currentUrl.trim()])
+      setCurrentUrl('')
+    }
+  }
+
+  const uploadImagesToSupabase = async (files: File[]): Promise<string[]> => {
+    const uploadPromises = files.map(async (file) => {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/products/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) throw new Error('Failed to upload image')
+      
+      const data = await response.json()
+      return data.url
     })
 
-    if (!response.ok) throw new Error('Failed to upload image')
-    
-    const data = await response.json()
-    return data.url
+    return Promise.all(uploadPromises)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,17 +86,28 @@ export default function CreateProductForm({ categories }: { categories: Category
     setLoading(true)
 
     try {
-      let imageUrl = formData.image
+      let finalImageUrls: string[] = []
 
-      // Upload image if file is selected
-      if (imageFile && imageMode === 'upload') {
-        imageUrl = await uploadImageToSupabase(imageFile)
+      // Upload images if files are selected
+      if (imageMode === 'upload' && imageFiles.length > 0) {
+        finalImageUrls = await uploadImagesToSupabase(imageFiles)
+      } else if (imageMode === 'url') {
+        finalImageUrls = imageUrls
+      }
+
+      if (finalImageUrls.length === 0) {
+        setError('Please add at least one image')
+        setLoading(false)
+        return
       }
 
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, image: imageUrl })
+        body: JSON.stringify({ 
+          ...formData, 
+          images: finalImageUrls // Send as array
+        })
       })
 
       const result = await response.json()
@@ -79,13 +119,13 @@ export default function CreateProductForm({ categories }: { categories: Category
           description: '',
           price: '',
           originalPrice: '',
-          image: '',
           categoryId: categories[0]?.id || '',
           stock: '0',
           badge: ''
         })
-        setImageFile(null)
-        setImagePreview('')
+        setImageFiles([])
+        setImagePreviews([])
+        setImageUrls([])
         router.refresh()
       } else {
         setError(result.message || 'Failed to create product')
@@ -96,6 +136,8 @@ export default function CreateProductForm({ categories }: { categories: Category
 
     setLoading(false)
   }
+
+  const displayImages = imageMode === 'upload' ? imagePreviews : imageUrls
 
   return (
     <Card>
@@ -201,7 +243,9 @@ export default function CreateProductForm({ categories }: { categories: Category
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Gambar Produk</label>
+            <label className="text-sm font-medium">
+              Gambar Produk (Multiple)
+            </label>
             
             {/* Image Mode Toggle */}
             <div className="flex gap-2 mb-3">
@@ -224,24 +268,31 @@ export default function CreateProductForm({ categories }: { categories: Category
             </div>
 
             {imageMode === 'url' ? (
-              <Input
-                required={!imageFile}
-                value={formData.image}
-                onChange={(e) => {
-                  setFormData({ ...formData, image: e.target.value })
-                  setImagePreview(e.target.value)
-                }}
-                placeholder="https://images.unsplash.com/..."
-              />
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    value={currentUrl}
+                    onChange={(e) => setCurrentUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addUrlImage()
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addUrlImage}>
+                    Add
+                  </Button>
+                </div>
+              </div>
             ) : (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleImageUpload(file)
-                  }}
+                  multiple
+                  onChange={(e) => handleImageUpload(e.target.files)}
                   className="hidden"
                   id="image-upload"
                 />
@@ -249,27 +300,41 @@ export default function CreateProductForm({ categories }: { categories: Category
                   <div className="text-gray-600">
                     <i className="fas fa-cloud-upload-alt text-4xl mb-2"></i>
                     <p className="text-sm">Click to upload or drag and drop</p>
-                    <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 5MB</p>
+                    <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 5MB (Multiple files)</p>
                   </div>
                 </label>
-                {imageFile && (
-                  <p className="text-sm text-green-600 mt-2">
-                    <i className="fas fa-check-circle mr-1"></i>
-                    {imageFile.name}
-                  </p>
-                )}
               </div>
             )}
 
-            {/* Image Preview */}
-            {imagePreview && (
+            {/* Image Previews */}
+            {displayImages.length > 0 && (
               <div className="mt-3">
-                <p className="text-sm font-medium mb-2">Preview:</p>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg border"
-                />
+                <p className="text-sm font-medium mb-2">
+                  Images ({displayImages.length}):
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {displayImages.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={img}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      {index === 0 && (
+                        <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                          Primary
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

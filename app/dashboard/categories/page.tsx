@@ -7,7 +7,7 @@ export default async function CategoriesPage() {
   const session = await verifySession()
 
   if (!session || session.role !== 'ADMIN') {
-    redirect('/dashboard')
+    redirect('/')
   }
 
   const categories = await prisma.category.findMany({

@@ -62,7 +62,7 @@ export default function ProductDetailModal({ product, isOpen, onClose, onEdit }:
             <div className="space-y-4">
               <div className="relative">
                 <img
-                  src={product.image}
+                  src={product.images?.[0] || '/placeholder.png'}
                   alt={product.name}
                   className="w-full h-80 object-cover rounded-lg border"
                 />

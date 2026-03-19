@@ -10,8 +10,20 @@ const prisma = new PrismaClient()
 export async function GET() {
   try {
     const session = await verifySession()
-    if (!session) {
+    if (!session || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify user exists in database
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.userId }
+    })
+
+    if (!userExists) {
+      logger.error('User from session not found in database', { userId: session.userId })
+      return NextResponse.json({ 
+        error: 'Session expired. Please login again.' 
+      }, { status: 401 })
     }
 
     // Check if cartItem model is available
@@ -44,8 +56,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await verifySession()
-    if (!session) {
+    if (!session || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify user exists in database
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.userId }
+    })
+
+    if (!userExists) {
+      logger.error('User from session not found in database', { userId: session.userId })
+      return NextResponse.json({ 
+        error: 'Session expired. Please login again.' 
+      }, { status: 401 })
     }
 
     const body = await request.json()

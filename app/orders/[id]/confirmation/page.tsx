@@ -5,7 +5,7 @@ import OrderConfirmationClient from './OrderConfirmationClient'
 export default async function OrderConfirmationPage({ 
   params 
 }: { 
-  params: { id: string } 
+  params: Promise<{ id: string }> 
 }) {
   const session = await verifySession()
   
@@ -13,5 +13,7 @@ export default async function OrderConfirmationPage({
     redirect('/login')
   }
 
-  return <OrderConfirmationClient orderId={params.id} />
+  const { id } = await params
+
+  return <OrderConfirmationClient orderId={id} />
 }

@@ -307,7 +307,7 @@ export default function CheckoutPageClient() {
               {cartItems.map((item) => (
                 <div key={item.id} className="flex space-x-3">
                   <img
-                    src={item.product.image}
+                    src={item.product.images?.[0] || '/placeholder.png'}
                     alt={item.product.name}
                     className="w-12 h-12 object-cover rounded"
                   />

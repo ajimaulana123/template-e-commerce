@@ -6,6 +6,9 @@ export async function addToWishlist(productId: string) {
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('Unauthorized')
+    }
     const data = await response.json()
     throw new Error(data.error || 'Failed to add to wishlist')
   }
@@ -19,6 +22,9 @@ export async function removeFromWishlist(wishlistItemId: string) {
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('Unauthorized')
+    }
     const data = await response.json()
     throw new Error(data.error || 'Failed to remove from wishlist')
   }

@@ -8,7 +8,7 @@ export default async function UsersPage() {
 
   // Only ADMIN can access this page
   if (!session || session.role !== 'ADMIN') {
-    redirect('/dashboard')
+    redirect('/')
   }
 
   const users = await getCachedUsers()

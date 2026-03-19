@@ -37,8 +37,7 @@ export const DesktopNavbar = ({
           <div className="flex items-center space-x-2 lg:space-x-4 flex-1 max-w-2xl">
             <Button 
               onClick={onCategoryClick}
-              variant="outline" 
-              className="flex items-center space-x-1 lg:space-x-2 bg-orange-500 text-white border-orange-500 hover:bg-orange-600 px-2 lg:px-4 text-sm"
+              className="flex items-center space-x-1 lg:space-x-2 bg-green-600 text-white hover:bg-green-700 border-0 px-3 lg:px-4 text-sm font-medium shadow-sm"
             >
               <Grid3X3 className="w-4 h-4" />
               <span className="hidden sm:inline">Kategori</span>

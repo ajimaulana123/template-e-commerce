@@ -22,8 +22,8 @@ function LoginContent() {
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {
-          // Redirect to return URL or dashboard
-          router.push(returnUrl || '/dashboard')
+          // Redirect to return URL or home
+          router.push(returnUrl || '/')
         } else {
           setChecking(false)
         }
@@ -40,8 +40,8 @@ function LoginContent() {
     const result = await loginAction(null, formData)
 
     if (result.success && result.role) {
-      // Redirect to return URL or dashboard
-      router.push(returnUrl || '/dashboard')
+      // Redirect to return URL or home
+      router.push(returnUrl || '/')
       router.refresh()
     } else if (result.message) {
       setError(result.message)

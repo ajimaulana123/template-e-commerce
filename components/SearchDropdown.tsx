@@ -75,7 +75,7 @@ export default function SearchDropdown({ isOpen, searchQuery, onClose, onSearchC
                     className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <img
-                      src={product.image}
+                      src={product.images?.[0] || '/placeholder.png'}
                       alt={product.name}
                       className="w-12 h-12 object-cover rounded"
                     />

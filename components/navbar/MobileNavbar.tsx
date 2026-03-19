@@ -34,10 +34,10 @@ export const MobileNavbar = ({
             <Button 
               onClick={onCategoryClick}
               variant="ghost" 
-              size="sm" 
-              className="p-1"
+              size="icon-sm" 
+              className="text-green-600 hover:text-green-700 hover:bg-green-50"
             >
-              <Menu className="w-5 h-5 text-orange-500" />
+              <Menu className="w-5 h-5" />
             </Button>
             <MobileLogo />
           </div>

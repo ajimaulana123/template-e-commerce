@@ -7,9 +7,12 @@ export async function GET(request: NextRequest) {
   try {
     const session = await verifySession()
     
-        
-    if (!session) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // If not logged in, return false (not in wishlist)
+    if (!session || !session.userId) {
+      return NextResponse.json({ 
+        inWishlist: false,
+        wishlistItemId: null 
+      })
     }
 
     const { searchParams } = new URL(request.url)
@@ -33,6 +36,10 @@ export async function GET(request: NextRequest) {
       wishlistItemId: wishlistItem?.id 
     })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to check wishlist' }, { status: 500 })
+    console.error('Error checking wishlist:', error)
+    return NextResponse.json({ 
+      inWishlist: false,
+      wishlistItemId: null 
+    }, { status: 200 })
   }
 }

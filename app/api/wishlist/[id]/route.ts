@@ -10,8 +10,7 @@ export async function DELETE(
   try {
     const session = await verifySession()
 
-    
-    if (!session) {
+    if (!session || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -37,6 +36,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Removed from wishlist' })
   } catch (error) {
+    console.error('Error removing from wishlist:', error)
     return NextResponse.json({ error: 'Failed to remove from wishlist' }, { status: 500 })
   }
 }

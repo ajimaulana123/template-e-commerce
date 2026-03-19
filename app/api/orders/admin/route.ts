@@ -31,7 +31,7 @@ export async function GET(request: Request) {
             product: {
               select: {
                 name: true,
-                image: true
+                images: true
               }
             }
           }

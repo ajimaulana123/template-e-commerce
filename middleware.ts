@@ -16,15 +16,23 @@ export async function middleware(request: NextRequest) {
 
   const session = await verifySession()
 
-  // Redirect to dashboard if already logged in and trying to access auth pages
+  // Redirect to home if already logged in and trying to access auth pages
   if (session && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Protect dashboard routes - redirect to login if not authenticated
+  // Protect dashboard routes - only admin can access
   if (pathname.startsWith('/dashboard')) {
     if (!session) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      // Not logged in - redirect to login with return URL
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('returnUrl', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    
+    // Logged in but not admin - redirect to home
+    if (session.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 

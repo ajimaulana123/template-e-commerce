@@ -22,6 +22,7 @@ interface Product {
   image: string
   stock: number
   sold: number
+  rating: number
   badge: string | null
   createdAt: string
   updatedAt: string
@@ -73,12 +74,12 @@ export default function HomePageClient() {
     }
 
     return {
-      id: product.id, // Add product ID for linking
+      id: product.id,
       name: product.name,
       price: formatPrice(product.price),
       originalPrice: product.originalPrice ? formatPrice(product.originalPrice) : undefined,
-      image: product.image,
-      rating: 5, // Default rating since we don't have rating in DB yet
+      images: product.images || ['/placeholder.png'], // Keep as array
+      rating: Math.round(product.rating), // Use actual rating from database (0-5)
       sold: product.sold.toString(),
       badge: product.badge || undefined
     }

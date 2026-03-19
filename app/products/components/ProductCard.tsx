@@ -27,7 +27,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
 
         <div className="relative h-48">
           <img
-            src={product.image}
+            src={product.images[0] || '/placeholder.png'}
             alt={product.name}
             className="w-full h-full object-cover"
           />
@@ -49,6 +49,22 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
           <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-sm lg:text-base">
             {product.name}
           </h3>
+          
+          {/* Rating - Always show stars */}
+          <div className="flex items-center mb-2">
+            {Array.from({ length: 5 }, (_, i) => (
+              <i 
+                key={i} 
+                className={`fas fa-star text-xs ${i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+              ></i>
+            ))}
+            {product.rating > 0 && (
+              <span className="text-xs text-gray-600 ml-2">
+                ({product.rating.toFixed(1)})
+              </span>
+            )}
+          </div>
+          
           <div className="space-y-1 mb-3">
             <div className="text-base lg:text-lg font-bold text-gray-900">
               {formatPrice(product.price)}

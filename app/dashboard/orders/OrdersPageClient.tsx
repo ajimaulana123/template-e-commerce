@@ -99,6 +99,7 @@ export default function OrdersPageClient() {
       PROCESSING: 'bg-blue-100 text-blue-800',
       SHIPPED: 'bg-purple-100 text-purple-800',
       DELIVERED: 'bg-green-100 text-green-800',
+      COMPLETED: 'bg-emerald-100 text-emerald-800',
       CANCELLED: 'bg-red-100 text-red-800'
     }
     return colors[status] || 'bg-gray-100 text-gray-800'
@@ -128,7 +129,7 @@ export default function OrdersPageClient() {
 
       {/* Filter Tabs */}
       <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
-        {['all', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => (
+        {['all', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED'].map((status) => (
           <Button
             key={status}
             variant={filter === status ? 'default' : 'outline'}
@@ -224,8 +225,8 @@ export default function OrdersPageClient() {
 
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Update Status</p>
-                  <div className="flex space-x-2">
-                    {['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => (
+                  <div className="flex flex-wrap gap-2">
+                    {['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED'].map((status) => (
                       <Button
                         key={status}
                         size="sm"

@@ -44,7 +44,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, price, originalPrice, image, categoryId, stock, badge } = body
+    const { name, description, price, originalPrice, images, categoryId, stock, badge } = body
+
+    // Ensure images is an array
+    const imageArray = Array.isArray(images) ? images : (images ? [images] : [])
 
     const product = await prisma.product.create({
       data: {
@@ -52,7 +55,7 @@ export async function POST(request: Request) {
         description,
         price: parseInt(price),
         originalPrice: originalPrice ? parseInt(originalPrice) : null,
-        image,
+        images: imageArray,
         categoryId,
         stock: parseInt(stock) || 0,
         badge

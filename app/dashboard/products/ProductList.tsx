@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Product, Category } from './types'
+import EditProductModal from './EditProductModal'
 
 interface ProductListProps {
   products: Product[]
@@ -15,18 +15,10 @@ interface ProductListProps {
 
 export default function ProductList({ products, categories, onViewDetails }: ProductListProps) {
   const router = useRouter()
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editData, setEditData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    originalPrice: '',
-    categoryId: '',
-    stock: '',
-    badge: ''
-  })
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
+  const [selectMode, setSelectMode] = useState(false)
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -37,54 +29,98 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
   }
 
   const handleEdit = (product: Product) => {
-    setEditingId(product.id)
-    setEditData({
-      name: product.name,
-      description: product.description || '',
-      price: product.price.toString(),
-      originalPrice: product.originalPrice?.toString() || '',
-      categoryId: product.categoryId,
-      stock: product.stock.toString(),
-      badge: product.badge || ''
-    })
-    setError('')
+    setEditingProduct(product)
   }
 
-  const handleCancelEdit = () => {
-    setEditingId(null)
-    setEditData({
-      name: '',
-      description: '',
-      price: '',
-      originalPrice: '',
-      categoryId: '',
-      stock: '',
-      badge: ''
-    })
-    setError('')
+  const toggleSelectProduct = (productId: string) => {
+    const newSelected = new Set(selectedProducts)
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId)
+    } else {
+      newSelected.add(productId)
+    }
+    setSelectedProducts(newSelected)
   }
 
-  const handleSaveEdit = async (productId: string) => {
+  const selectAll = () => {
+    setSelectedProducts(new Set(products.map(p => p.id)))
+  }
+
+  const deselectAll = () => {
+    setSelectedProducts(new Set())
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedProducts.size === 0) {
+      alert('Please select products to delete')
+      return
+    }
+
+    const count = selectedProducts.size
+    if (!confirm(`Are you sure you want to delete ${count} product(s)? This will also delete all their images from storage.`)) {
+      return
+    }
+
     setLoading(true)
-    setError('')
 
     try {
-      const response = await fetch(`/api/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editData)
-      })
+      const deletePromises = Array.from(selectedProducts).map(productId =>
+        fetch(`/api/products/${productId}`, { method: 'DELETE' })
+      )
 
-      const result = await response.json()
+      const results = await Promise.all(deletePromises)
+      const failed = results.filter(r => !r.ok).length
 
-      if (response.ok) {
-        setEditingId(null)
-        router.refresh()
+      if (failed > 0) {
+        alert(`Deleted ${count - failed} products. ${failed} failed.`)
       } else {
-        setError(result.message || 'Failed to update product')
+        alert(`Successfully deleted ${count} product(s)`)
       }
+
+      setSelectedProducts(new Set())
+      setSelectMode(false)
+      router.refresh()
     } catch (error) {
-      setError('Terjadi kesalahan saat update produk.')
+      alert('Error deleting products')
+    }
+
+    setLoading(false)
+  }
+
+  const handleDeleteAll = async () => {
+    if (products.length === 0) {
+      alert('No products to delete')
+      return
+    }
+
+    if (!confirm(`⚠️ WARNING: This will delete ALL ${products.length} products and their images from storage. This action cannot be undone. Are you absolutely sure?`)) {
+      return
+    }
+
+    // Double confirmation
+    if (!confirm(`This is your last chance. Delete ALL ${products.length} products?`)) {
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const deletePromises = products.map(product =>
+        fetch(`/api/products/${product.id}`, { method: 'DELETE' })
+      )
+
+      const results = await Promise.all(deletePromises)
+      const failed = results.filter(r => !r.ok).length
+
+      if (failed > 0) {
+        alert(`Deleted ${products.length - failed} products. ${failed} failed.`)
+      } else {
+        alert(`Successfully deleted all ${products.length} products`)
+      }
+
+      router.refresh()
+    } catch (error) {
+      alert('Error deleting products')
     }
 
     setLoading(false)
@@ -102,12 +138,10 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
         method: 'DELETE'
       })
 
-      const result = await response.json()
-
       if (response.ok) {
         router.refresh()
       } else {
-        alert(result.message || 'Failed to delete product')
+        alert('Failed to delete product')
       }
     } catch (error) {
       alert('Terjadi kesalahan saat menghapus produk.')
@@ -117,198 +151,184 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Daftar Produk ({products.length})</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4 max-h-[600px] overflow-y-auto">
-          {products.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
-              Belum ada produk
-            </p>
-          ) : (
-            products.map((product) => (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Daftar Produk ({products.length})</CardTitle>
+            <div className="flex gap-2">
+              {!selectMode ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectMode(true)}
+                  >
+                    <i className="fas fa-check-square mr-2"></i>
+                    Select Mode
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={handleDeleteAll}
+                    disabled={loading || products.length === 0}
+                  >
+                    <i className="fas fa-trash-alt mr-2"></i>
+                    Delete All
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm text-gray-600 self-center">
+                    {selectedProducts.size} selected
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={selectAll}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={deselectAll}
+                  >
+                    Deselect All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={handleBulkDelete}
+                    disabled={loading || selectedProducts.size === 0}
+                  >
+                    <i className="fas fa-trash mr-2"></i>
+                    Delete ({selectedProducts.size})
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectMode(false)
+                      setSelectedProducts(new Set())
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {products.map((product) => (
               <div
                 key={product.id}
-                className="p-4 bg-gray-50 rounded-lg space-y-3"
+                className={`p-4 rounded-lg space-y-3 ${
+                  selectMode && selectedProducts.has(product.id)
+                    ? 'bg-blue-50 border-2 border-blue-500'
+                    : 'bg-gray-50'
+                }`}
               >
-                {editingId === product.id ? (
-                  // Edit Mode
-                  <div className="space-y-3">
-                    {error && (
-                      <div className="bg-destructive/10 text-destructive text-xs p-2 rounded">
-                        {error}
-                      </div>
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium">Nama Produk</label>
-                        <Input
-                          value={editData.name}
-                          onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-medium">Kategori</label>
-                        <select
-                          value={editData.categoryId}
-                          onChange={(e) => setEditData({ ...editData, categoryId: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mt-1"
-                        >
-                          {categories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-medium">Harga (Rp)</label>
-                        <Input
-                          type="number"
-                          value={editData.price}
-                          onChange={(e) => setEditData({ ...editData, price: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-medium">Harga Asli (Optional)</label>
-                        <Input
-                          type="number"
-                          value={editData.originalPrice}
-                          onChange={(e) => setEditData({ ...editData, originalPrice: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-medium">Stok</label>
-                        <Input
-                          type="number"
-                          value={editData.stock}
-                          onChange={(e) => setEditData({ ...editData, stock: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-medium">Badge</label>
-                        <Input
-                          value={editData.badge}
-                          onChange={(e) => setEditData({ ...editData, badge: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
+                <div className="flex items-start space-x-3">
+                  {selectMode && (
+                    <input
+                      type="checkbox"
+                      checked={selectedProducts.has(product.id)}
+                      onChange={() => toggleSelectProduct(product.id)}
+                      className="mt-1 w-5 h-5 cursor-pointer"
+                    />
+                  )}
+                  <img
+                    src={product.images?.[0] || '/placeholder.png'}
+                    alt={product.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {product.category.name}
+                    </p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="text-sm font-bold text-blue-600">
+                        {formatPrice(product.price)}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-gray-500 line-through">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                      )}
+                      {product.badge && (
+                        <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded">
+                          {product.badge}
+                        </span>
+                      )}
                     </div>
-
-                    <div>
-                      <label className="text-xs font-medium">Deskripsi</label>
-                      <textarea
-                        value={editData.description}
-                        onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mt-1"
-                        rows={2}
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleSaveEdit(product.id)}
-                        disabled={loading}
-                        className="flex-1"
-                      >
-                        {loading ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleCancelEdit}
-                        disabled={loading}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
+                    <div className="flex items-center space-x-3 mt-1 text-xs text-gray-600">
+                      <span>Stock: {product.stock}</span>
+                      <span>Sold: {product.sold}</span>
+                      <span>Rating: {product.rating.toFixed(1)}</span>
+                      <span>Images: {product.images?.length || 0}</span>
                     </div>
                   </div>
-                ) : (
-                  // View Mode
-                  <>
-                    <div className="flex items-start space-x-3">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm truncate">{product.name}</p>
-                            <p className="text-xs text-blue-600">{product.category.name}</p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <span className="text-sm font-bold text-gray-900">
-                                {formatPrice(product.price)}
-                              </span>
-                              {product.originalPrice && (
-                                <span className="text-xs text-gray-500 line-through">
-                                  {formatPrice(product.originalPrice)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          {product.badge && (
-                            <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                              {product.badge}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-gray-600 mt-2">
-                          <span><i className="fas fa-box mr-1"></i>Stock: {product.stock}</span>
-                          <span><i className="fas fa-shopping-cart mr-1"></i>Sold: {product.sold}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2">
+                  {!selectMode && (
+                    <div className="flex flex-col space-y-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onViewDetails(product)}
-                        disabled={loading}
-                        className="flex-1 text-xs text-blue-600 hover:text-blue-700"
                       >
-                        <i className="fas fa-eye mr-1"></i>View
+                        <i className="fas fa-eye mr-2"></i>
+                        View
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(product)}
-                        disabled={loading}
-                        className="flex-1 text-xs"
                       >
-                        <i className="fas fa-edit mr-1"></i>Edit
+                        <i className="fas fa-edit mr-2"></i>
+                        Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => handleDelete(product.id, product.name)}
                         disabled={loading}
-                        className="flex-1 text-xs"
                       >
-                        <i className="fas fa-trash mr-1"></i>Delete
+                        <i className="fas fa-trash mr-2"></i>
+                        Delete
                       </Button>
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+
+            {products.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <i className="fas fa-box text-4xl mb-4"></i>
+                <p>Belum ada produk</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          categories={categories}
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSuccess={() => {
+            setEditingProduct(null)
+            router.refresh()
+          }}
+        />
+      )}
+    </>
   )
 }

@@ -7,8 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await verifySession()
 
-    
-    if (!session) {
+    if (!session || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -26,6 +25,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(wishlistItems)
   } catch (error) {
+    console.error('Error fetching wishlist:', error)
     return NextResponse.json({ error: 'Failed to fetch wishlist' }, { status: 500 })
   }
 }
@@ -35,8 +35,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await verifySession()
 
-    
-    if (!session) {
+    if (!session || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -86,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(wishlistItem, { status: 201 })
   } catch (error) {
+    console.error('Error adding to wishlist:', error)
     return NextResponse.json({ error: 'Failed to add to wishlist' }, { status: 500 })
   }
 }

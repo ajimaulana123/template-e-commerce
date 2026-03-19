@@ -12,6 +12,16 @@ export async function addToCart(productId: string, quantity: number = 1) {
 
     if (!response.ok) {
       const error = await response.json()
+      
+      // Check if session expired
+      if (error.error === 'Session expired. Please login again.') {
+        throw new Error('SessionExpired')
+      }
+      
+      if (response.status === 401) {
+        throw new Error('Unauthorized')
+      }
+      
       throw new Error(error.error || 'Failed to add to cart')
     }
 

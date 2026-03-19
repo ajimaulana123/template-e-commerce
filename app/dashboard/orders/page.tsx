@@ -6,7 +6,7 @@ export default async function OrdersPage() {
   const session = await verifySession()
   
   if (!session || session.role !== 'ADMIN') {
-    redirect('/login')
+    redirect('/')
   }
 
   return <OrdersPageClient />

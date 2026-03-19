@@ -45,8 +45,11 @@ export function useWishlist(productId: string) {
       window.dispatchEvent(new CustomEvent('wishlistChanged'))
     } catch (error: any) {
       if (error.message === 'Unauthorized') {
-        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search)
-        router.push(`/login?redirect=${returnUrl}`)
+        // Show user-friendly message before redirect
+        if (confirm('You need to login to add items to wishlist. Would you like to login now?')) {
+          const returnUrl = encodeURIComponent(window.location.pathname + window.location.search)
+          router.push(`/login?redirect=${returnUrl}`)
+        }
       } else {
         alert(error.message || 'Failed to update wishlist')
       }

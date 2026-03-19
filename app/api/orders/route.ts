@@ -20,7 +20,7 @@ export async function GET() {
               select: {
                 id: true,
                 name: true,
-                image: true
+                images: true
               }
             }
           }
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
             orderId: newOrder.id,
             productId: item.product.id,
             productName: item.product.name,
-            productImage: item.product.image,
+            productImage: item.product.images[0] || '',
             price: item.product.price,
             quantity: item.quantity,
             subtotal: item.product.price * item.quantity

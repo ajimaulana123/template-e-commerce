@@ -48,15 +48,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    // Delete product image from storage if exists
-    if (product.image) {
-      const imageFileName = getProductImageFileNameFromUrl(product.image)
-      if (imageFileName) {
-        console.log('Deleting product image:', imageFileName)
-        const deleteResult = await deleteProductImage(imageFileName)
-        if (!deleteResult.success) {
-          console.warn('Failed to delete product image:', deleteResult.error)
-          // Continue with product deletion even if image delete fails
+    // Delete product images from storage if exists
+    if (product.images && product.images.length > 0) {
+      for (const imageUrl of product.images) {
+        const imageFileName = getProductImageFileNameFromUrl(imageUrl)
+        if (imageFileName) {
+          console.log('Deleting product image:', imageFileName)
+          const deleteResult = await deleteProductImage(imageFileName)
+          if (!deleteResult.success) {
+            console.warn('Failed to delete product image:', deleteResult.error)
+            // Continue with product deletion even if image delete fails
+          }
         }
       }
     }
@@ -84,9 +86,9 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, description, price, originalPrice, image, categoryId, stock, badge } = body
+    const { name, description, price, originalPrice, images, categoryId, stock, badge } = body
 
-    // Get current product to check if image is being changed
+    // Get current product
     const currentProduct = await prisma.product.findUnique({
       where: { id }
     })
@@ -95,15 +97,25 @@ export async function PUT(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    // If image is being updated and there's an old image, delete it from storage
-    if (image && currentProduct.image && currentProduct.image !== image) {
-      const oldImageFileName = getProductImageFileNameFromUrl(currentProduct.image)
-      if (oldImageFileName) {
-        console.log('Deleting old product image:', oldImageFileName)
-        const deleteResult = await deleteProductImage(oldImageFileName)
-        if (!deleteResult.success) {
-          console.warn('Failed to delete old product image:', deleteResult.error)
-          // Continue with update even if delete fails
+    // Ensure images is an array
+    const newImageArray = Array.isArray(images) ? images : (images ? [images] : currentProduct.images)
+
+    // Find images that were removed (exist in old but not in new)
+    const oldImages = currentProduct.images || []
+    const removedImages = oldImages.filter(oldImg => !newImageArray.includes(oldImg))
+
+    // Delete removed images from Supabase storage
+    if (removedImages.length > 0) {
+      console.log(`Deleting ${removedImages.length} removed images...`)
+      for (const imageUrl of removedImages) {
+        const imageFileName = getProductImageFileNameFromUrl(imageUrl)
+        if (imageFileName) {
+          console.log('Deleting image:', imageFileName)
+          const deleteResult = await deleteProductImage(imageFileName)
+          if (!deleteResult.success) {
+            console.warn('Failed to delete image:', deleteResult.error)
+            // Continue even if delete fails
+          }
         }
       }
     }
@@ -115,7 +127,7 @@ export async function PUT(
         description,
         price: parseInt(price),
         originalPrice: originalPrice ? parseInt(originalPrice) : null,
-        image,
+        images: newImageArray,
         categoryId,
         stock: parseInt(stock),
         badge

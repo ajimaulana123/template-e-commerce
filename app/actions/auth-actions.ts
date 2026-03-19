@@ -92,7 +92,10 @@ export async function registerAction(prevState: any, formData: FormData) {
 
   const { email, password, role, token } = validatedFields.data
 
-  // Verify token for secret registration
+  // Determine role based on token presence
+  let userRole: 'ADMIN' | 'USER' = 'USER' // Default to USER for public registration
+  
+  // If token is provided, verify it and set role to ADMIN
   if (token) {
     const validToken = process.env.REGISTRATION_TOKEN
     if (!validToken || token !== validToken) {
@@ -102,6 +105,7 @@ export async function registerAction(prevState: any, formData: FormData) {
         errors: null,
       }
     }
+    userRole = 'ADMIN' // Token valid, set role to ADMIN
   }
 
   try {
@@ -123,7 +127,7 @@ export async function registerAction(prevState: any, formData: FormData) {
       data: {
         email,
         password: passwordHash,
-        role: role || 'ADMIN',
+        role: userRole,
       },
     })
 

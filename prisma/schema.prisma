@@ -22,10 +22,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile      Profile?
-  cartItems    CartItem[]
-  orders       Order[]
-  wishlistItems WishlistItem[]
+  profile          Profile?
+  cartItems        CartItem[]
+  orders           Order[]
+  wishlistItems    WishlistItem[]
+  reviews          ProductReview[]
+  productQuestions ProductQuestion[]
 
   @@map("users")
 }
@@ -60,19 +62,22 @@ model Product {
   description   String?
   price         Int
   originalPrice Int?
-  image         String
+  images        String[] // Changed from single image to array of images
   categoryId    String   @db.Uuid
   stock         Int      @default(0)
   sold          Int      @default(0)
   rating        Float    @default(0)
+  totalReviews  Int      @default(0)
   badge         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  category       Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  cartItems      CartItem[]
-  orderItems     OrderItem[]
-  wishlistItems  WishlistItem[]
+  category         Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  wishlistItems    WishlistItem[]
+  reviews          ProductReview[]
+  questions        ProductQuestion[]
 
   @@map("products")
 }
@@ -110,6 +115,7 @@ enum OrderStatus {
   PROCESSING
   SHIPPED
   DELIVERED
+  COMPLETED
   CANCELLED
 }
 
@@ -147,8 +153,9 @@ model Order {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         OrderItem[]
+  reviews       ProductReview[]
   
   @@map("orders")
 }
@@ -168,4 +175,40 @@ model OrderItem {
   product       Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
   
   @@map("order_items")
+}
+
+model ProductReview {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  orderId   String   @db.Uuid
+  rating    Int      // 1-5
+  review    String?  // Review text (optional)
+  images    String[] // Array of review image URLs
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, productId])
+  @@map("product_reviews")
+}
+
+model ProductQuestion {
+  id         String    @id @default(uuid()) @db.Uuid
+  productId  String    @db.Uuid
+  userId     String    @db.Uuid
+  question   String
+  answer     String?
+  answeredBy String?   @db.Uuid
+  answeredAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("product_questions")
 }
