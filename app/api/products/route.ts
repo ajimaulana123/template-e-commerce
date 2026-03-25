@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
+import { getCache, setCache, deleteCachePattern, cacheKeys, cacheTTL } from '@/lib/cache'
 
-// GET all products
+// GET all products with pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoryId')
     const search = searchParams.get('search')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const skip = (page - 1) * limit
 
     // Build where clause
     const where: any = {}
@@ -23,13 +27,32 @@ export async function GET(request: Request) {
       ]
     }
 
+    // Get total count for pagination
+    const totalCount = await prisma.product.count({ where })
+
+    // Get paginated products
     const products = await prisma.product.findMany({
       where,
       include: { category: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit
     })
 
-    return NextResponse.json(products)
+    return NextResponse.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasMore: skip + products.length < totalCount
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
+      }
+    })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
   }
@@ -62,6 +85,10 @@ export async function POST(request: Request) {
       },
       include: { category: true }
     })
+
+    // Invalidate product caches
+    deleteCachePattern('products:.*')
+    deleteCachePattern('product:.*')
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {

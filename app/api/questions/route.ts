@@ -44,12 +44,15 @@ export async function POST(request: Request) {
   }
 }
 
-// GET - Get questions for a product
+// GET - Get questions for a product with pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('productId')
     const filter = searchParams.get('filter') // 'all' | 'unanswered'
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
 
     const where: any = {}
     
@@ -62,6 +65,10 @@ export async function GET(request: Request) {
       where.answer = null
     }
 
+    // Get total count
+    const totalCount = await prisma.productQuestion.count({ where })
+
+    // Get paginated questions
     const questions = await prisma.productQuestion.findMany({
       where,
       include: {
@@ -79,10 +86,21 @@ export async function GET(request: Request) {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      skip,
+      take: limit
     })
 
-    return NextResponse.json(questions)
+    return NextResponse.json({
+      questions,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasMore: skip + questions.length < totalCount
+      }
+    })
   } catch (error) {
     console.error('Get questions error:', error)
     return NextResponse.json({ error: 'Failed to fetch questions' }, { status: 500 })

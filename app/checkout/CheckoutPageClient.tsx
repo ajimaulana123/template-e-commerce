@@ -194,7 +194,8 @@ export default function CheckoutPageClient() {
                 <Input
                   value={shippingAddress.fullName}
                   onChange={(e) => handleAddressChange('fullName', e.target.value)}
-                  placeholder="Enter your full name"
+                  placeholder="John Doe"
+                  className="placeholder:text-gray-300"
                 />
               </div>
               
@@ -205,7 +206,8 @@ export default function CheckoutPageClient() {
                 <Input
                   value={shippingAddress.phone}
                   onChange={(e) => handleAddressChange('phone', e.target.value)}
-                  placeholder="08xxxxxxxxxx"
+                  placeholder="081234567890"
+                  className="placeholder:text-gray-300"
                 />
               </div>
               
@@ -216,7 +218,8 @@ export default function CheckoutPageClient() {
                 <Input
                   value={shippingAddress.address}
                   onChange={(e) => handleAddressChange('address', e.target.value)}
-                  placeholder="Street address, building, apartment"
+                  placeholder="Jl. Example No. 123"
+                  className="placeholder:text-gray-300"
                 />
               </div>
               
@@ -227,7 +230,8 @@ export default function CheckoutPageClient() {
                 <Input
                   value={shippingAddress.city}
                   onChange={(e) => handleAddressChange('city', e.target.value)}
-                  placeholder="City"
+                  placeholder="Jakarta"
+                  className="placeholder:text-gray-300"
                 />
               </div>
               
@@ -239,6 +243,7 @@ export default function CheckoutPageClient() {
                   value={shippingAddress.postalCode}
                   onChange={(e) => handleAddressChange('postalCode', e.target.value)}
                   placeholder="12345"
+                  className="placeholder:text-gray-300"
                 />
               </div>
               
@@ -249,7 +254,8 @@ export default function CheckoutPageClient() {
                 <Input
                   value={shippingAddress.province}
                   onChange={(e) => handleAddressChange('province', e.target.value)}
-                  placeholder="Province"
+                  placeholder="DKI Jakarta"
+                  className="placeholder:text-gray-300"
                 />
               </div>
             </div>
@@ -352,7 +358,7 @@ export default function CheckoutPageClient() {
             <Button 
               onClick={handleCheckout}
               disabled={processing}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
             >
               {processing ? 'Processing...' : `Place Order - ${formatPrice(calculateTotal())}`}
             </Button>

@@ -1,11 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { cn } from '@/lib/utils'
-import CategoryModal from './CategoryModal'
 import { DesktopNavbar } from './navbar/DesktopNavbar'
 import { MobileNavbar } from './navbar/MobileNavbar'
 import { useAuth, useCartCount, useWishlistCount, useScrollBanner } from './navbar/hooks'
+
+// Lazy load CategoryModal - only loads when user clicks categories
+const CategoryModal = dynamic(() => import('./CategoryModal'), {
+  ssr: false
+})
 
 export default function MainNavbar() {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)

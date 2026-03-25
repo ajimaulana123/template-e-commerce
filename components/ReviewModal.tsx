@@ -161,7 +161,7 @@ export default function ReviewModal({
           <Button
             onClick={handleSubmit}
             disabled={submitting || rating === 0}
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
           >
             {submitting ? (isEditMode ? 'Updating...' : 'Submitting...') : (isEditMode ? 'Update Review' : 'Submit Review')}
           </Button>

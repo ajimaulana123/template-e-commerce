@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Product } from '../types'
 import { formatPrice, calculateDiscount } from '../utils/formatters'
@@ -26,18 +27,21 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
         </button>
 
         <div className="relative h-48">
-          <img
+          <Image
             src={product.images[0] || '/placeholder.png'}
             alt={product.name}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover"
+            loading="lazy"
           />
           {product.badge && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold z-10">
               {product.badge}
             </div>
           )}
           {product.originalPrice && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold" style={{ marginTop: product.badge ? '32px' : '0' }}>
+            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold z-10" style={{ marginTop: product.badge ? '32px' : '0' }}>
               -{calculateDiscount(product.price, product.originalPrice)}%
             </div>
           )}
@@ -86,7 +90,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
             </span>
           </div>
           <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-sm lg:text-base"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm lg:text-base"
             onClick={(e) => onAddToCart(product.id, e)}
             disabled={isAddingToCart || product.stock === 0}
           >

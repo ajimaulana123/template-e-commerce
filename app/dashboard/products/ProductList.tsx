@@ -1,11 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Product, Category } from './types'
-import EditProductModal from './EditProductModal'
+
+// Lazy load EditProductModal - only loads when editing product
+const EditProductModal = dynamic(() => import('./EditProductModal'), {
+  ssr: false
+})
 
 interface ProductListProps {
   products: Product[]

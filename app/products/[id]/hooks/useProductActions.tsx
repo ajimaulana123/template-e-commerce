@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { addToCart } from '@/lib/cart'
+import { toast } from '@/components/ui/use-toast'
+import { CheckCircle2 } from 'lucide-react'
 
 export function useProductActions(productId: string) {
   const [quantity, setQuantity] = useState(1)
@@ -18,17 +20,33 @@ export function useProductActions(productId: string) {
     try {
       setAddingToCart(true)
       await addToCart(productId, quantity)
-      alert('Product added to cart successfully!')
+      
+      // Trigger cart update event
+      window.dispatchEvent(new Event('cartUpdated'))
+      
+      toast({
+        variant: "success",
+        title: "Added to cart!",
+        description: `${quantity} item(s) added to your cart successfully.`,
+      })
     } catch (error: any) {
       if (error.message === 'SessionExpired') {
-        alert('Your session has expired. Please login again.')
+        toast({
+          variant: "destructive",
+          title: "Session expired",
+          description: "Please login again to continue.",
+        })
         const returnUrl = encodeURIComponent(`/products/${productId}`)
         router.push(`/login?redirect=${returnUrl}`)
       } else if (error.message === 'Unauthorized') {
         const returnUrl = encodeURIComponent(`/products/${productId}`)
         router.push(`/login?redirect=${returnUrl}`)
       } else {
-        alert(error.message || 'Failed to add to cart')
+        toast({
+          variant: "destructive",
+          title: "Failed to add to cart",
+          description: error.message || "Something went wrong. Please try again.",
+        })
       }
     } finally {
       setAddingToCart(false)
@@ -39,17 +57,29 @@ export function useProductActions(productId: string) {
     try {
       setAddingToCart(true)
       await addToCart(productId, quantity)
+      
+      // Trigger cart update event
+      window.dispatchEvent(new Event('cartUpdated'))
+      
       router.push('/cart')
     } catch (error: any) {
       if (error.message === 'SessionExpired') {
-        alert('Your session has expired. Please login again.')
+        toast({
+          variant: "destructive",
+          title: "Session expired",
+          description: "Please login again to continue.",
+        })
         const returnUrl = encodeURIComponent(`/products/${productId}`)
         router.push(`/login?redirect=${returnUrl}`)
       } else if (error.message === 'Unauthorized') {
         const returnUrl = encodeURIComponent(`/products/${productId}`)
         router.push(`/login?redirect=${returnUrl}`)
       } else {
-        alert(error.message || 'Failed to add to cart')
+        toast({
+          variant: "destructive",
+          title: "Failed to process",
+          description: error.message || "Something went wrong. Please try again.",
+        })
       }
     } finally {
       setAddingToCart(false)

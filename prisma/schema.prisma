@@ -79,6 +79,11 @@ model Product {
   reviews          ProductReview[]
   questions        ProductQuestion[]
 
+  @@index([categoryId])
+  @@index([createdAt(sort: Desc)])
+  @@index([sold(sort: Desc)])
+  @@index([name])
+  @@index([price])
   @@map("products")
 }
 
@@ -94,6 +99,7 @@ model CartItem {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   
   @@unique([userId, productId])
+  @@index([userId])
   @@map("cart_items")
 }
 
@@ -107,6 +113,7 @@ model WishlistItem {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   
   @@unique([userId, productId])
+  @@index([userId])
   @@map("wishlist_items")
 }
 
@@ -157,6 +164,10 @@ model Order {
   items         OrderItem[]
   reviews       ProductReview[]
   
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@index([orderNumber])
   @@map("orders")
 }
 
@@ -193,6 +204,8 @@ model ProductReview {
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   
   @@unique([userId, productId])
+  @@index([productId])
+  @@index([createdAt(sort: Desc)])
   @@map("product_reviews")
 }
 
@@ -210,5 +223,7 @@ model ProductQuestion {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  @@index([productId])
+  @@index([createdAt(sort: Desc)])
   @@map("product_questions")
 }

@@ -112,16 +112,25 @@ export async function POST(request: Request) {
   }
 }
 
-// GET - Get reviews for a product
+// GET - Get reviews for a product with pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('productId')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
 
     if (!productId) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 })
     }
 
+    // Get total count
+    const totalCount = await prisma.productReview.count({
+      where: { productId }
+    })
+
+    // Get paginated reviews
     const reviews = await prisma.productReview.findMany({
       where: { productId },
       include: {
@@ -139,7 +148,9 @@ export async function GET(request: Request) {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      skip,
+      take: limit
     })
 
     // Map to include userId at top level for easier access
@@ -148,7 +159,16 @@ export async function GET(request: Request) {
       userId: review.user.id
     }))
 
-    return NextResponse.json(reviewsWithUserId)
+    return NextResponse.json({
+      reviews: reviewsWithUserId,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasMore: skip + reviews.length < totalCount
+      }
+    })
   } catch (error) {
     console.error('Get reviews error:', error)
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 })

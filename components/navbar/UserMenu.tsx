@@ -56,52 +56,68 @@ export const UserMenu = ({ user, loading, onLogout, mobile = false }: UserMenuPr
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>
-          <div>
-            <p className="text-sm font-medium text-gray-900">{user.email}</p>
-            <p className="text-xs text-gray-500">
-              {user.role === 'ADMIN' ? 'Administrator' : 'Customer'}
-            </p>
+      <DropdownMenuContent align="end" className="w-56 p-2">
+        <DropdownMenuLabel className="px-3 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg mb-2">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{user.email?.split('@')[0]}</p>
+              <p className="text-xs text-blue-100">
+                {user.role === 'ADMIN' ? '👑 Administrator' : '🛍️ Customer'}
+              </p>
+            </div>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
         
         {user.role === 'ADMIN' && (
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard" className="flex items-center cursor-pointer">
-              <Settings className="w-4 h-4 mr-2" />
-              Dashboard
+          <DropdownMenuItem asChild className="cursor-pointer rounded-md mb-1">
+            <Link href="/dashboard" className="flex items-center px-3 py-2 bg-purple-50 hover:bg-purple-100 transition-colors">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                <Settings className="w-4 h-4 text-purple-600" />
+              </div>
+              <span className="font-medium text-gray-900">Dashboard</span>
             </Link>
           </DropdownMenuItem>
         )}
         
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center cursor-pointer">
-            <User className="w-4 h-4 mr-2" />
-            My Profile
+        <DropdownMenuItem asChild className="cursor-pointer rounded-md mb-1">
+          <Link href="/profile" className="flex items-center px-3 py-2 bg-blue-50 hover:bg-blue-100 transition-colors">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <User className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="font-medium text-gray-900">My Profile</span>
           </Link>
         </DropdownMenuItem>
         
-        <DropdownMenuItem asChild>
-          <Link href="/wishlist" className="flex items-center cursor-pointer">
-            <Heart className="w-4 h-4 mr-2" />
-            My Wishlist
+        <DropdownMenuItem asChild className="cursor-pointer rounded-md mb-1">
+          <Link href="/wishlist" className="flex items-center px-3 py-2 bg-red-50 hover:bg-red-100 transition-colors">
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+              <Heart className="w-4 h-4 text-red-600" />
+            </div>
+            <span className="font-medium text-gray-900">My Wishlist</span>
           </Link>
         </DropdownMenuItem>
         
-        <DropdownMenuItem asChild>
-          <Link href="/orders" className="flex items-center cursor-pointer">
-            <Package className="w-4 h-4 mr-2" />
-            My Orders
+        <DropdownMenuItem asChild className="cursor-pointer rounded-md mb-1">
+          <Link href="/orders" className="flex items-center px-3 py-2 bg-green-50 hover:bg-green-100 transition-colors">
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+              <Package className="w-4 h-4 text-green-600" />
+            </div>
+            <span className="font-medium text-gray-900">My Orders</span>
           </Link>
         </DropdownMenuItem>
         
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="my-2" />
         
-        <DropdownMenuItem onClick={onLogout} className="text-red-600 cursor-pointer">
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
+        <DropdownMenuItem onClick={onLogout} className="cursor-pointer rounded-md">
+          <div className="flex items-center px-3 py-2 w-full bg-red-50 hover:bg-red-100 transition-colors rounded-md">
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+              <LogOut className="w-4 h-4 text-red-600" />
+            </div>
+            <span className="font-medium text-red-600">Logout</span>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

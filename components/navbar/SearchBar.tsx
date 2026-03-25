@@ -4,6 +4,7 @@ import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import SearchDropdown from '../SearchDropdown'
+import { useDebounce } from '@/lib/hooks/useDebounce'
 
 interface SearchBarProps {
   className?: string
@@ -14,6 +15,9 @@ export const SearchBar = ({ className }: SearchBarProps) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  
+  // Debounce search query to reduce API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,12 +40,16 @@ export const SearchBar = ({ className }: SearchBarProps) => {
     }
   }
 
+  // Auto-navigate when debounced search query changes
+  useEffect(() => {
+    if (debouncedSearchQuery.trim() && searchDropdownOpen) {
+      router.push(`/products?search=${encodeURIComponent(debouncedSearchQuery.trim())}`)
+    }
+  }, [debouncedSearchQuery, router, searchDropdownOpen])
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
-    if (value.trim()) {
-      router.push(`/products?search=${encodeURIComponent(value.trim())}`)
-      setSearchDropdownOpen(false)
-    }
+    setSearchDropdownOpen(false)
   }
 
   return (

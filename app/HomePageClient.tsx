@@ -20,6 +20,7 @@ interface Product {
   price: number
   originalPrice: number | null
   image: string
+  images?: string[]
   stock: number
   sold: number
   rating: number
@@ -48,10 +49,11 @@ export default function HomePageClient() {
         }
 
         // Fetch products
-        const productsResponse = await fetch('/api/products')
+        const productsResponse = await fetch('/api/products?limit=100')
         if (productsResponse.ok) {
           const productsData = await productsResponse.json()
-          setProducts(productsData)
+          // Handle both old format (array) and new format (object with products array)
+          setProducts(Array.isArray(productsData) ? productsData : productsData.products || [])
         }
       } catch (error) {
         // Silent fail - failed to fetch data
@@ -78,8 +80,8 @@ export default function HomePageClient() {
       name: product.name,
       price: formatPrice(product.price),
       originalPrice: product.originalPrice ? formatPrice(product.originalPrice) : undefined,
-      images: product.images || ['/placeholder.png'], // Keep as array
-      rating: Math.round(product.rating), // Use actual rating from database (0-5)
+      images: product.images && product.images.length > 0 ? product.images : [product.image || '/placeholder.png'],
+      rating: Math.round(product.rating),
       sold: product.sold.toString(),
       badge: product.badge || undefined
     }

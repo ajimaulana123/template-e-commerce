@@ -39,16 +39,16 @@ export default function CategoryList() {
       <CardContent className="space-y-4">
         {/* Search and Filters */}
         <div className="space-y-3">
-          {/* Search */}
+          {/* Search Bar */}
           <div className="relative">
+            <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
               placeholder="Cari kategori..."
               value={state.searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
               maxLength={UI_CONFIG.MAX_SEARCH_LENGTH}
             />
-            <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             {state.searchQuery && (
               <button
                 onClick={() => handleSearchChange('')}
@@ -59,54 +59,38 @@ export default function CategoryList() {
             )}
           </div>
 
-          {/* Sort and Filter Controls */}
-          <div className="flex flex-wrap gap-2">
-            {/* Sort Buttons */}
-            <div className="flex items-center space-x-1">
-              <span className="text-xs text-gray-500">Urutkan:</span>
-              <Button
-                variant={sortState.field === 'name' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => actions.handleSort('name')}
-                className="text-xs"
+          {/* Filters Row */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Urutkan:</span>
+              <select
+                value={`${sortState.field}-${sortState.order}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-') as [any, 'asc' | 'desc']
+                  actions.handleSort(field)
+                  if (sortState.order !== order) {
+                    actions.handleSort(field)
+                  }
+                }}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               >
-                Nama
-                {sortState.field === 'name' && (
-                  <i className={`fas fa-sort-${sortState.order === 'asc' ? 'up' : 'down'} ml-1`} />
-                )}
-              </Button>
-              <Button
-                variant={sortState.field === 'createdAt' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => actions.handleSort('createdAt')}
-                className="text-xs"
-              >
-                Tanggal
-                {sortState.field === 'createdAt' && (
-                  <i className={`fas fa-sort-${sortState.order === 'asc' ? 'up' : 'down'} ml-1`} />
-                )}
-              </Button>
-              <Button
-                variant={sortState.field === 'productsCount' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => actions.handleSort('productsCount')}
-                className="text-xs"
-              >
-                Produk
-                {sortState.field === 'productsCount' && (
-                  <i className={`fas fa-sort-${sortState.order === 'asc' ? 'up' : 'down'} ml-1`} />
-                )}
-              </Button>
+                <option value="name-asc">Nama (A-Z)</option>
+                <option value="name-desc">Nama (Z-A)</option>
+                <option value="createdAt-desc">Terbaru</option>
+                <option value="createdAt-asc">Terlama</option>
+                <option value="productsCount-desc">Produk Terbanyak</option>
+                <option value="productsCount-asc">Produk Tersedikit</option>
+              </select>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex items-center space-x-1">
-              <span className="text-xs text-gray-500">Filter:</span>
+            {/* Filter Chips */}
+            <div className="flex items-center gap-2">
               <Button
                 variant={filterState.hasProducts === null ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => actions.handleFilterByProducts(null)}
-                className="text-xs"
+                className={`h-8 text-xs ${filterState.hasProducts === null ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
               >
                 Semua
               </Button>
@@ -114,16 +98,18 @@ export default function CategoryList() {
                 variant={filterState.hasProducts === true ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => actions.handleFilterByProducts(true)}
-                className="text-xs"
+                className={`h-8 text-xs ${filterState.hasProducts === true ? 'bg-green-600 hover:bg-green-700' : ''}`}
               >
+                <i className="fas fa-check-circle mr-1.5" />
                 Ada Produk
               </Button>
               <Button
                 variant={filterState.hasProducts === false ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => actions.handleFilterByProducts(false)}
-                className="text-xs"
+                className={`h-8 text-xs ${filterState.hasProducts === false ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
               >
+                <i className="fas fa-inbox mr-1.5" />
                 Kosong
               </Button>
             </div>

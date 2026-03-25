@@ -1,15 +1,33 @@
 import { Product } from '../types'
 import { ProductCard } from './ProductCard'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PaginationControls } from './PaginationControls'
 
 interface ProductsGridProps {
   products: Product[]
   loading: boolean
   addingToCart: string | null
   onAddToCart: (productId: string, e: React.MouseEvent) => void
+  pagination?: {
+    page: number
+    totalPages: number
+    hasMore: boolean
+  }
+  onPrevPage?: () => void
+  onNextPage?: () => void
+  onGoToPage?: (page: number) => void
 }
 
-export function ProductsGrid({ products, loading, addingToCart, onAddToCart }: ProductsGridProps) {
+export function ProductsGrid({ 
+  products, 
+  loading, 
+  addingToCart, 
+  onAddToCart,
+  pagination,
+  onPrevPage,
+  onNextPage,
+  onGoToPage
+}: ProductsGridProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -46,15 +64,29 @@ export function ProductsGrid({ products, loading, addingToCart, onAddToCart }: P
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-      {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          onAddToCart={onAddToCart}
-          isAddingToCart={addingToCart === product.id}
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAddToCart={onAddToCart}
+            isAddingToCart={addingToCart === product.id}
+          />
+        ))}
+      </div>
+      
+      {pagination && onPrevPage && onNextPage && onGoToPage && (
+        <PaginationControls
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          hasMore={pagination.hasMore}
+          onPrevPage={onPrevPage}
+          onNextPage={onNextPage}
+          onGoToPage={onGoToPage}
+          loading={loading}
         />
-      ))}
-    </div>
+      )}
+    </>
   )
 }

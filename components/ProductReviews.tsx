@@ -29,22 +29,49 @@ export default function ProductReviews({ productId, currentUserId, onEditReview 
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const limit = 10
 
   useEffect(() => {
-    fetchReviews()
+    fetchReviews(1)
   }, [productId])
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (pageNum: number) => {
     try {
-      const response = await fetch(`/api/reviews?productId=${productId}`)
+      if (pageNum === 1) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
+      
+      const response = await fetch(`/api/reviews?productId=${productId}&page=${pageNum}&limit=${limit}`)
       if (response.ok) {
         const data = await response.json()
-        setReviews(data)
+        
+        if (pageNum === 1) {
+          setReviews(data.reviews || [])
+        } else {
+          setReviews(prev => [...prev, ...(data.reviews || [])])
+        }
+        
+        setTotalCount(data.pagination?.totalCount || 0)
+        setHasMore(data.pagination?.hasMore || false)
+        setPage(pageNum)
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
+    }
+  }
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchReviews(page + 1)
     }
   }
 
@@ -60,8 +87,8 @@ export default function ProductReviews({ productId, currentUserId, onEditReview 
       })
 
       if (response.ok) {
-        // Refresh reviews
-        fetchReviews()
+        // Refresh reviews from page 1
+        fetchReviews(1)
       } else {
         alert('Failed to delete review')
       }
@@ -123,7 +150,7 @@ export default function ProductReviews({ productId, currentUserId, onEditReview 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold">Customer Reviews ({reviews.length})</h3>
+        <h3 className="text-xl font-bold">Customer Reviews ({totalCount})</h3>
       </div>
 
       <div className="space-y-4">
@@ -211,6 +238,20 @@ export default function ProductReviews({ productId, currentUserId, onEditReview 
           </div>
         ))}
       </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="text-center pt-4">
+          <Button
+            onClick={loadMore}
+            disabled={loadingMore}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            {loadingMore ? 'Loading...' : `Load More Reviews (${totalCount - reviews.length} remaining)`}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

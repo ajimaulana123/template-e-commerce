@@ -122,7 +122,7 @@ export default function ChatBot() {
               <CardTitle className="text-lg">AI Assistant</CardTitle>
               {pageContext && (
                 <p className="text-xs text-blue-100 mt-1">
-                  📊 Context: User Management
+                  📊 Context: {pageContext.split('\n')[0].replace('Context: ', '')}
                 </p>
               )}
             </div>
@@ -177,7 +177,7 @@ export default function ChatBot() {
               <p>👋 Halo! Ada yang bisa saya bantu?</p>
               {pageContext && (
                 <p className="text-xs mt-2 text-blue-600">
-                  Saya punya akses ke data user management
+                  Saya punya akses ke data halaman ini
                 </p>
               )}
             </div>

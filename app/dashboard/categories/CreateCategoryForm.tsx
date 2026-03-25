@@ -44,59 +44,57 @@ export default function CreateCategoryForm() {
             </div>
           )}
 
-          {/* Name Field */}
-          <div className="space-y-2">
-            <label htmlFor="category-name" className="text-sm font-medium text-gray-700">
-              Nama Kategori *
-            </label>
-            <Input
-              id="category-name"
-              name="name"
-              value={formData.name}
-              onChange={(e) => actions.updateFormData({ name: e.target.value })}
-              placeholder="Contoh: Electronics"
-              disabled={state.loading}
-              className={errors.name ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}
-              required
-              maxLength={50}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-600 flex items-center">
-                <i className="fas fa-exclamation-circle mr-1" />
-                {errors.name}
-              </p>
-            )}
-          </div>
+          {/* Name and Slug Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label htmlFor="category-name" className="text-sm font-medium text-gray-700">
+                Nama Kategori *
+              </label>
+              <Input
+                id="category-name"
+                name="name"
+                value={formData.name}
+                onChange={(e) => actions.updateFormData({ name: e.target.value })}
+                placeholder="Contoh: Fashion & Beauty"
+                disabled={state.loading}
+                className={errors.name ? 'border-red-300' : ''}
+                required
+                maxLength={50}
+              />
+              {errors.name && (
+                <p className="text-xs text-red-600 flex items-center mt-1">
+                  <i className="fas fa-exclamation-circle mr-1" />
+                  {errors.name}
+                </p>
+              )}
+            </div>
 
-          {/* Slug Field */}
-          <div className="space-y-2">
-            <label htmlFor="category-slug" className="text-sm font-medium text-gray-700">
-              Slug *
-            </label>
-            <Input
-              id="category-slug"
-              name="slug"
-              value={formData.slug}
-              onChange={(e) => actions.updateFormData({ slug: e.target.value })}
-              placeholder="electronics"
-              disabled={state.loading}
-              className={`font-mono text-sm ${errors.slug ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-              required
-              maxLength={50}
-            />
-            {errors.slug && (
-              <p className="text-sm text-red-600 flex items-center">
-                <i className="fas fa-exclamation-circle mr-1" />
-                {errors.slug}
-              </p>
-            )}
-            <p className="text-xs text-gray-500">
-              Otomatis dibuat dari nama, dapat diedit manual
-            </p>
+            <div className="space-y-1.5">
+              <label htmlFor="category-slug" className="text-sm font-medium text-gray-700">
+                Slug *
+              </label>
+              <Input
+                id="category-slug"
+                name="slug"
+                value={formData.slug}
+                onChange={(e) => actions.updateFormData({ slug: e.target.value })}
+                placeholder="fashion-beauty"
+                disabled={state.loading}
+                className={`font-mono text-sm ${errors.slug ? 'border-red-300' : ''}`}
+                required
+                maxLength={50}
+              />
+              {errors.slug && (
+                <p className="text-xs text-red-600 flex items-center mt-1">
+                  <i className="fas fa-exclamation-circle mr-1" />
+                  {errors.slug}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Icon Selector */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">
               Icon *
             </label>
@@ -113,12 +111,12 @@ export default function CreateCategoryForm() {
             <Button
               type="submit"
               disabled={state.loading}
-              className="flex-1"
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
               {state.loading ? (
                 <>
                   <i className="fas fa-spinner fa-spin mr-2" />
-                  Membuat...
+                  Membuat Kategori...
                 </>
               ) : (
                 <>
@@ -132,25 +130,10 @@ export default function CreateCategoryForm() {
               variant="outline"
               onClick={actions.resetForm}
               disabled={state.loading}
+              className="px-4"
             >
-              <i className="fas fa-undo mr-2" />
-              Reset
+              <i className="fas fa-undo" />
             </Button>
-          </div>
-
-          {/* Form Info */}
-          <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
-            <div className="flex items-start">
-              <i className="fas fa-info-circle mr-2 mt-0.5 text-blue-500" />
-              <div>
-                <p className="font-medium mb-1">Tips:</p>
-                <ul className="space-y-1">
-                  <li>• Gunakan nama yang jelas dan mudah dipahami</li>
-                  <li>• Slug akan otomatis dibuat dari nama kategori</li>
-                  <li>• Pilih icon yang sesuai dengan kategori</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </form>
       </CardContent>

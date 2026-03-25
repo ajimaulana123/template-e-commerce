@@ -2,12 +2,28 @@ import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
 
+// Cache configuration
+const CACHE_DURATION = 60 * 5 // 5 minutes in seconds
+let cachedData: any = null
+let cacheTimestamp: number = 0
+
 export async function GET() {
   try {
     const session = await verifySession()
     
     if (!session || session.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Return cached data if still valid
+    const now = Date.now()
+    if (cachedData && (now - cacheTimestamp) < CACHE_DURATION * 1000) {
+      return NextResponse.json(cachedData, {
+        headers: {
+          'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`,
+          'X-Cache': 'HIT'
+        }
+      })
     }
 
     // Get current date ranges
@@ -131,7 +147,7 @@ export async function GET() {
       ? (((monthlyOrders - lastMonthOrders) / lastMonthOrders) * 100)
       : 0
 
-    return NextResponse.json({
+    const responseData = {
       overview: {
         totalRevenue: totalRevenue._sum.total || 0,
         monthlyRevenue: monthlyRevenue._sum.total || 0,
@@ -154,6 +170,17 @@ export async function GET() {
         revenue
       })),
       recentOrders
+    }
+
+    // Update cache
+    cachedData = responseData
+    cacheTimestamp = Date.now()
+
+    return NextResponse.json(responseData, {
+      headers: {
+        'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`,
+        'X-Cache': 'MISS'
+      }
     })
   } catch (error) {
     console.error('Analytics error:', error)
@@ -161,5 +188,24 @@ export async function GET() {
       { error: 'Failed to fetch analytics' },
       { status: 500 }
     )
+  }
+}
+
+// POST - Clear cache (admin only)
+export async function POST() {
+  try {
+    const session = await verifySession()
+    
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Clear cache
+    cachedData = null
+    cacheTimestamp = 0
+
+    return NextResponse.json({ success: true, message: 'Cache cleared' })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to clear cache' }, { status: 500 })
   }
 }

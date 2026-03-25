@@ -1,11 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Shield, CheckCircle, FileText, Award } from 'lucide-react'
-import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { Shield, CheckCircle, FileText, Award, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HalalCertificatePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
         <div className="text-center mb-8">
           <Shield className="w-16 h-16 text-green-600 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Sertifikasi Halal</h1>

@@ -2,10 +2,26 @@ import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
 import { logger } from '@/lib/logger'
+import { getCache, setCache, deleteCache, cacheKeys, cacheTTL } from '@/lib/cache'
 
 // GET all categories
 export async function GET() {
   try {
+    // Check cache first
+    const cacheKey = cacheKeys.categories()
+    const cached = getCache(cacheKey)
+    
+    if (cached) {
+      logger.debug('Categories served from cache')
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200'
+        }
+      })
+    }
+
+    // Fetch from database
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' },
       include: {
@@ -15,8 +31,16 @@ export async function GET() {
       }
     })
     
-    logger.debug('Categories fetched successfully', { count: categories.length })
-    return NextResponse.json(categories)
+    // Store in cache
+    setCache(cacheKey, categories, cacheTTL.categories)
+    
+    logger.debug('Categories fetched from database', { count: categories.length })
+    return NextResponse.json(categories, {
+      headers: {
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200'
+      }
+    })
   } catch (error) {
     logger.error('Failed to fetch categories', error)
     return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 })
@@ -72,6 +96,10 @@ export async function POST(request: Request) {
         }
       }
     })
+
+    // Invalidate categories cache
+    const cacheKey = cacheKeys.categories()
+    deleteCache(cacheKey)
 
     logger.info('Category created successfully', { 
       categoryId: category.id, 

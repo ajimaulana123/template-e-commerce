@@ -13,6 +13,7 @@ Template sederhana untuk aplikasi dengan authentication (login/register) dan das
 - ✅ Supabase Storage untuk upload foto
 - ✅ Prisma ORM
 - ✅ Tailwind CSS + shadcn/ui components
+- ✅ **Performance Optimized** (Pagination, Caching, Image Optimization)
 
 ## Tech Stack
 
@@ -379,6 +380,14 @@ bunx prisma generate
 - [docs/ADMIN_SETUP.md](./docs/ADMIN_SETUP.md) - Admin setup guide
 - [docs/REGISTRATION_SECURITY.md](./docs/REGISTRATION_SECURITY.md) - Registration security
 - [docs/SUPABASE_STORAGE_SETUP.md](./docs/SUPABASE_STORAGE_SETUP.md) - Storage setup
+
+**Performance Optimization:** ⚡
+- [docs/PERFORMANCE_INDEX.md](./docs/PERFORMANCE_INDEX.md) - **Start here for performance docs**
+- [docs/QUICK_REFERENCE.md](./docs/QUICK_REFERENCE.md) - Quick reference guide
+- [docs/PHASE1_SUMMARY.md](./docs/PHASE1_SUMMARY.md) - Phase 1 summary
+- [docs/PERFORMANCE_OPTIMIZATIONS.md](./docs/PERFORMANCE_OPTIMIZATIONS.md) - Technical details
+- [docs/OPTIMIZATION_ROADMAP.md](./docs/OPTIMIZATION_ROADMAP.md) - Complete roadmap
+- [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) - Deployment guide
 
 **Feature Guides:**
 - [docs/USER_MANAGEMENT_GUIDE.md](./docs/USER_MANAGEMENT_GUIDE.md) - User management

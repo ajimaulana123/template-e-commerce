@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
 import { deleteProductImage, getProductImageFileNameFromUrl } from '@/lib/supabase'
+import { getCache, setCache, deleteCache, deleteCachePattern, cacheKeys, cacheTTL } from '@/lib/cache'
 
 // GET single product
 export async function GET(
@@ -10,6 +11,19 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+
+    // Check cache first
+    const cacheKey = cacheKeys.product(id)
+    const cached = getCache(cacheKey)
+    
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200'
+        }
+      })
+    }
 
     const product = await prisma.product.findUnique({
       where: { id },
@@ -20,7 +34,15 @@ export async function GET(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    return NextResponse.json(product)
+    // Store in cache
+    setCache(cacheKey, product, cacheTTL.product)
+
+    return NextResponse.json(product, {
+      headers: {
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200'
+      }
+    })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 })
   }
@@ -66,6 +88,10 @@ export async function DELETE(
     await prisma.product.delete({
       where: { id }
     })
+
+    // Invalidate caches
+    deleteCache(cacheKeys.product(id))
+    deleteCachePattern('products:.*')
 
     return NextResponse.json({ message: 'Product deleted' })
   } catch (error) {
@@ -134,6 +160,10 @@ export async function PUT(
       },
       include: { category: true }
     })
+
+    // Invalidate caches
+    deleteCache(cacheKeys.product(id))
+    deleteCachePattern('products:.*')
 
     return NextResponse.json(product)
   } catch (error) {

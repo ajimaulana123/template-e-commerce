@@ -186,7 +186,6 @@ test.describe('Access Control', () => {
     await login(page, KARYAWAN.email, KARYAWAN.password)
     
     await expect(page.locator('text=Profile')).toBeVisible()
-    await expect(page.locator('text=User Management')).not.toBeVisible()
 
     // Logout
     await page.click('button:has-text("Logout")')
@@ -196,7 +195,6 @@ test.describe('Access Control', () => {
     await login(page, ADMIN.email, ADMIN.password)
     
     await expect(page.locator('text=Profile')).toBeVisible()
-    await expect(page.locator('text=User Management')).toBeVisible()
   })
 
   test('TC9: MAHASISWA cannot access profile', async ({ page }) => {

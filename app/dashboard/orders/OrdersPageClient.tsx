@@ -30,28 +30,54 @@ export default function OrdersPageClient() {
   const [filter, setFilter] = useState<string>('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [updating, setUpdating] = useState(false)
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const limit = 20
 
   useEffect(() => {
-    fetchOrders()
+    fetchOrders(1)
   }, [filter])
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (pageNum: number) => {
     try {
-      setLoading(true)
+      if (pageNum === 1) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
+      
       const url = filter === 'all' 
-        ? '/api/orders/admin' 
-        : `/api/orders/admin?status=${filter}`
+        ? `/api/orders/admin?page=${pageNum}&limit=${limit}` 
+        : `/api/orders/admin?status=${filter}&page=${pageNum}&limit=${limit}`
       
       const response = await fetch(url)
       
       if (response.ok) {
         const data = await response.json()
-        setOrders(data)
+        
+        if (pageNum === 1) {
+          setOrders(data.orders || [])
+        } else {
+          setOrders(prev => [...prev, ...(data.orders || [])])
+        }
+        
+        setTotalCount(data.pagination?.totalCount || 0)
+        setHasMore(data.pagination?.hasMore || false)
+        setPage(pageNum)
       }
     } catch (error) {
       // Silent fail
     } finally {
       setLoading(false)
+      setLoadingMore(false)
+    }
+  }
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchOrders(page + 1)
     }
   }
 
@@ -65,7 +91,7 @@ export default function OrdersPageClient() {
       })
 
       if (response.ok) {
-        fetchOrders()
+        fetchOrders(1)
         setSelectedOrder(null)
       }
     } catch (error) {
@@ -115,13 +141,14 @@ export default function OrdersPageClient() {
   }
 
   return (
-    <div>
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Package className="w-6 h-6 text-blue-600" />
           <h1 className="text-2xl font-bold text-gray-900">Orders Management</h1>
+          <span className="text-sm text-gray-500">({totalCount} total)</span>
         </div>
-        <Button onClick={fetchOrders} variant="outline" size="sm">
+        <Button onClick={() => fetchOrders(1)} variant="outline" size="sm">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
@@ -201,6 +228,20 @@ export default function OrdersPageClient() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="p-4 border-t">
+            <Button
+              onClick={loadMore}
+              disabled={loadingMore}
+              variant="outline"
+              className="w-full"
+            >
+              {loadingMore ? 'Loading...' : `Load More Orders (${totalCount - orders.length} remaining)`}
+            </Button>
           </div>
         )}
       </div>

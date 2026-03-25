@@ -1,12 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useChatContext } from '../ChatContext'
 import { Input } from '@/components/ui/input'
 import { Product, Category } from './types'
 import ProductForm from './ProductForm'
 import ProductList from './ProductList'
-import ProductDetailModal from './ProductDetailModal'
+
+// Lazy load ProductDetailModal - only loads when viewing product details
+const ProductDetailModal = dynamic(() => import('./ProductDetailModal'), {
+  ssr: false
+})
 
 interface ProductsPageClientProps {
   products: Product[]

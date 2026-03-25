@@ -92,7 +92,7 @@ export default function OrderConfirmationClient({ orderId }: { orderId: string }
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Order Not Found</h1>
         <p className="text-gray-600 mb-6">{error || 'The order you are looking for does not exist'}</p>
         <Link href="/orders">
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
             View All Orders
           </Button>
         </Link>
@@ -223,7 +223,7 @@ export default function OrderConfirmationClient({ orderId }: { orderId: string }
           </Button>
         </Link>
         <Link href="/products" className="flex-1">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
             Continue Shopping
           </Button>
         </Link>

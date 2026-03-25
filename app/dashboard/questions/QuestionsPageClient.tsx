@@ -119,7 +119,7 @@ export default function QuestionsPageClient() {
   }
 
   return (
-    <div>
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <MessageCircle className="w-6 h-6 text-blue-600" />

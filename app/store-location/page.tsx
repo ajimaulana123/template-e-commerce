@@ -1,10 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MapPin, Clock, Phone, Mail, Train } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { MapPin, Clock, Phone, Mail, Train, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 export default function StoreLocationPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Lokasi Toko Kami</h1>
 
         {/* Main Store Card */}

@@ -1,89 +1,57 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Flame, TrendingUp, Sparkles } from 'lucide-react'
+import { MAIN_SLIDES, formatPrice } from './hero-slider/constants'
+import type { FeaturedProductsResponse } from './hero-slider/types'
 
 export default function HeroSlider() {
+  const router = useRouter()
   const [currentSlide, setCurrentSlide] = useState(0)
-
-  const slides = [
-    {
-      id: 1,
-      title: "PRODUK HALAL",
-      subtitle: "Terpercaya",
-      hashtag: "#HalalMartJepang",
-      description: "Belanja produk halal berkualitas di Tokyo",
-      period: "Periode: 14 Maret s.d 14 April 2026",
-      bgColor: "bg-gradient-to-r from-green-600 to-emerald-700",
-      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=500&fit=crop",
-      cta: "DAPATKAN PRODUK HALAL TERBAIK UNTUK KELUARGA ANDA!"
-    },
-    {
-      id: 2,
-      title: "FLASH SALE",
-      subtitle: "50% OFF",
-      hashtag: "#SuperDiskon",
-      description: "Produk pilihan dengan harga terbaik hari ini",
-      period: "Terbatas sampai: 23:59 WIB",
-      bgColor: "bg-gradient-to-r from-red-500 to-red-600",
-      image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=500&fit=crop",
-      cta: "BELANJA SEKARANG SEBELUM KEHABISAN!"
-    },
-    {
-      id: 3,
-      title: "MAKANAN HALAL",
-      subtitle: "Fresh Daily",
-      hashtag: "#FreshHalal",
-      description: "Makanan segar halal setiap hari dari supplier terpercaya",
-      period: "Stock terbatas - Buruan pesan!",
-      bgColor: "bg-gradient-to-r from-blue-600 to-blue-700",
-      image: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800&h=500&fit=crop",
-      cta: "JAMINAN HALAL 100% BERSERTIFIKAT!"
-    }
-  ]
-
-  const sideBanners = [
-    {
-      id: 1,
-      title: "Pulsa & Oxymeter",
-      subtitle: "Mulai dari",
-      price: "Rp31.800",
-      bgColor: "bg-gradient-to-br from-yellow-400 to-yellow-500",
-      image: "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&h=200&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Tumbler Minum Stainless",
-      subtitle: "DISKON",
-      price: "32%",
-      bgColor: "bg-gradient-to-br from-pink-400 to-pink-500",
-      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=200&fit=crop"
-    },
-    {
-      id: 3,
-      title: "Pengering Kutek Kuku",
-      subtitle: "Mulai Dari",
-      price: "30RB-an",
-      bgColor: "bg-gradient-to-br from-purple-400 to-purple-500",
-      image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=400&fit=crop"
-    }
-  ]
+  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProductsResponse | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Fetch featured products
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await fetch('/api/featured-products')
+        if (response.ok) {
+          const data = await response.json()
+          setFeaturedProducts(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch featured products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedProducts()
+
+    // Auto slide timer
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
+      setCurrentSlide((prev) => (prev + 1) % MAIN_SLIDES.length)
     }, 5000)
+    
     return () => clearInterval(timer)
-  }, [slides.length])
+  }, [])
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length)
+    setCurrentSlide((prev) => (prev + 1) % MAIN_SLIDES.length)
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+    setCurrentSlide((prev) => (prev - 1 + MAIN_SLIDES.length) % MAIN_SLIDES.length)
+  }
+
+  const handleBannerClick = (productId: string) => {
+    router.push(`/products/${productId}`)
   }
 
   return (
@@ -93,7 +61,7 @@ export default function HeroSlider() {
         <div className="relative w-full lg:w-[60%] rounded-lg overflow-hidden shadow-lg">
           <div className="flex transition-transform duration-500 ease-in-out h-full"
                style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-            {slides.map((slide) => (
+            {MAIN_SLIDES.map((slide) => (
               <div key={slide.id} className={`min-w-full h-full ${slide.bgColor} relative flex items-center`}>
                 <div className="container mx-auto px-6 lg:px-8 flex items-center h-full relative z-10">
                   {/* Content */}
@@ -116,7 +84,10 @@ export default function HeroSlider() {
                     <div className="bg-yellow-400 text-gray-900 p-2 md:p-3 rounded-lg mb-4 font-bold text-xs md:text-sm lg:text-base">
                       {slide.cta}
                     </div>
-                    <Button className="bg-white text-gray-900 hover:bg-gray-100 font-bold px-4 md:px-6 py-2 md:py-3">
+                    <Button 
+                      onClick={() => router.push(slide.link)}
+                      className="bg-white text-gray-900 hover:bg-gray-100 font-bold px-4 md:px-6 py-2 md:py-3"
+                    >
                       Belanja Sekarang
                     </Button>
                   </div>
@@ -150,7 +121,7 @@ export default function HeroSlider() {
 
           {/* Dots Indicator */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-            {slides.map((_, index) => (
+            {MAIN_SLIDES.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
@@ -165,52 +136,139 @@ export default function HeroSlider() {
 
         {/* Right Side - Side Banners (40%) */}
         <div className="hidden lg:flex flex-col gap-4 w-[40%]">
-          {/* Top 2 Banners */}
-          <div className="flex gap-4 h-[48%]">
-            {sideBanners.slice(0, 2).map((banner) => (
-              <div 
-                key={banner.id}
-                className={`relative flex-1 ${banner.bgColor} rounded-lg overflow-hidden shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300`}
-              >
-                <div className="absolute inset-0 p-4 flex flex-col justify-between text-white z-10">
-                  <div>
-                    <h3 className="font-bold text-sm mb-1">{banner.title}</h3>
-                    <p className="text-xs opacity-90">{banner.subtitle}</p>
+          {loading ? (
+            /* Loading State */
+            <>
+              <div className="flex gap-4 h-[48%]">
+                {/* Flash Sale Skeleton */}
+                <div className="flex-1 bg-white rounded-lg p-4 space-y-3">
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-20" />
+                  <div className="flex-1" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+                
+                {/* Best Seller Skeleton */}
+                <div className="flex-1 bg-white rounded-lg p-4 space-y-3">
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-20" />
+                  <div className="flex-1" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              </div>
+              
+              {/* New Arrival Skeleton */}
+              <div className="h-[48%] bg-white rounded-lg p-6 space-y-4">
+                <Skeleton className="h-6 w-28" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-24" />
+                <div className="flex-1" />
+                <Skeleton className="h-10 w-32" />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Top 2 Banners */}
+              <div className="flex gap-4 h-[48%]">
+                {/* Flash Sale Banner */}
+                {featuredProducts?.flashSale ? (
+                  <div 
+                    onClick={() => handleBannerClick(featuredProducts.flashSale!.id)}
+                    className="relative flex-1 bg-gradient-to-br from-red-400 to-red-500 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300"
+                  >
+                    <div className="absolute inset-0 p-4 flex flex-col justify-between text-white z-10">
+                      <div>
+                        <Badge className="bg-white/20 text-white border-0 mb-2">
+                          <Flame className="w-3 h-3 mr-1" />
+                          FLASH SALE
+                        </Badge>
+                        <h3 className="font-bold text-sm mb-1 line-clamp-2">{featuredProducts.flashSale.name}</h3>
+                        <p className="text-xs opacity-90">{featuredProducts.flashSale.category}</p>
+                      </div>
+                      <div className="text-2xl font-bold">-{featuredProducts.flashSale.discount}%</div>
+                    </div>
+                    <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-30">
+                      <img 
+                        src={featuredProducts.flashSale.image} 
+                        alt={featuredProducts.flashSale.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold">{banner.price}</div>
-                </div>
-                <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-30">
-                  <img 
-                    src={banner.image} 
-                    alt={banner.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+                ) : (
+                  <div className="flex-1 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center text-white">
+                    <p className="text-sm">No Flash Sale</p>
+                  </div>
+                )}
 
-          {/* Bottom 1 Banner */}
-          <div className="h-[48%]">
-            <div 
-              className={`relative w-full h-full ${sideBanners[2].bgColor} rounded-lg overflow-hidden shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300`}
-            >
-              <div className="absolute inset-0 p-6 flex flex-col justify-between text-white z-10">
-                <div>
-                  <h3 className="font-bold text-lg mb-2">{sideBanners[2].title}</h3>
-                  <p className="text-sm opacity-90">{sideBanners[2].subtitle}</p>
-                </div>
-                <div className="text-4xl font-bold">{sideBanners[2].price}</div>
+                {/* Best Seller Banner */}
+                {featuredProducts?.bestSeller ? (
+                  <div 
+                    onClick={() => handleBannerClick(featuredProducts.bestSeller!.id)}
+                    className="relative flex-1 bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300"
+                  >
+                    <div className="absolute inset-0 p-4 flex flex-col justify-between text-white z-10">
+                      <div>
+                        <Badge className="bg-white/20 text-white border-0 mb-2">
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          TERLARIS
+                        </Badge>
+                        <h3 className="font-bold text-sm mb-1 line-clamp-2">{featuredProducts.bestSeller.name}</h3>
+                        <p className="text-xs opacity-90">{featuredProducts.bestSeller.category}</p>
+                      </div>
+                      <div className="text-xl font-bold">{featuredProducts.bestSeller.sold}+ Terjual</div>
+                    </div>
+                    <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-30">
+                      <img 
+                        src={featuredProducts.bestSeller.image} 
+                        alt={featuredProducts.bestSeller.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center text-white">
+                    <p className="text-sm">No Best Seller</p>
+                  </div>
+                )}
               </div>
-              <div className="absolute right-0 bottom-0 w-1/2 h-full opacity-30">
-                <img 
-                  src={sideBanners[2].image} 
-                  alt={sideBanners[2].title}
-                  className="w-full h-full object-cover"
-                />
+
+              {/* Bottom 1 Banner - New Arrival */}
+              <div className="h-[48%]">
+                {featuredProducts?.newArrival ? (
+                  <div 
+                    onClick={() => handleBannerClick(featuredProducts.newArrival!.id)}
+                    className="relative w-full h-full bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300"
+                  >
+                    <div className="absolute inset-0 p-6 flex flex-col justify-between text-white z-10">
+                      <div>
+                        <Badge className="bg-white/20 text-white border-0 mb-2">
+                          <Sparkles className="w-4 h-4 mr-1" />
+                          PRODUK BARU
+                        </Badge>
+                        <h3 className="font-bold text-lg mb-2 line-clamp-2">{featuredProducts.newArrival.name}</h3>
+                        <p className="text-sm opacity-90">{featuredProducts.newArrival.category}</p>
+                      </div>
+                      <div className="text-3xl font-bold">{formatPrice(featuredProducts.newArrival.price)}</div>
+                    </div>
+                    <div className="absolute right-0 bottom-0 w-1/2 h-full opacity-30">
+                      <img 
+                        src={featuredProducts.newArrival.image} 
+                        alt={featuredProducts.newArrival.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center text-white">
+                    <p className="text-sm">No New Arrival</p>
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -52,31 +52,43 @@ function LoginContent() {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-50">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg mb-4 animate-pulse">
+            <i className="fas fa-spinner fa-spin text-white text-2xl" />
+          </div>
+          <p className="text-gray-600 font-medium">Memuat...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl sm:text-2xl text-center">Dashboard Template</CardTitle>
-          <p className="text-center text-sm text-muted-foreground">
-            Login ke akun Anda
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-8 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-3 pb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+            <i className="fas fa-store text-white text-2xl" />
+          </div>
+          <CardTitle className="text-2xl sm:text-3xl text-center font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            Halal Mart
+          </CardTitle>
+          <p className="text-center text-sm text-gray-600">
+            Selamat datang kembali! Silakan login ke akun Anda
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                {error}
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg flex items-center gap-2">
+                <i className="fas fa-exclamation-circle" />
+                <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <i className="fas fa-envelope text-green-600" />
                 Email
               </label>
               <Input
@@ -85,36 +97,62 @@ function LoginContent() {
                 type="email"
                 placeholder="nama@email.com"
                 required
-                className="text-base"
+                className="h-11 text-base border-gray-300 focus:border-green-500 focus:ring-green-500"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <i className="fas fa-lock text-green-600" />
                 Password
               </label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Masukkan password Anda"
                 required
-                className="text-base"
+                className="h-11 text-base border-gray-300 focus:border-green-500 focus:ring-green-500"
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Loading...' : 'Login'}
+            <Button 
+              type="submit" 
+              className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <i className="fas fa-spinner fa-spin mr-2" />
+                  Memproses...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-sign-in-alt mr-2" />
+                  Login
+                </>
+              )}
             </Button>
 
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Don't have an account? </span>
-              <Link 
-                href={`/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`}
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Register here
-              </Link>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">atau</span>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Belum punya akun?{' '}
+                <Link 
+                  href={`/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`}
+                  className="font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors"
+                >
+                  Daftar sekarang
+                </Link>
+              </p>
             </div>
           </form>
         </CardContent>
@@ -125,25 +163,26 @@ function LoginContent() {
 
 function LoginFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl sm:text-2xl text-center">Dashboard Template</CardTitle>
-          <p className="text-center text-sm text-muted-foreground">
-            Login ke akun Anda
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-8 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-3 pb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg animate-pulse">
+            <i className="fas fa-store text-white text-2xl" />
+          </div>
+          <div className="h-8 bg-gray-200 rounded-lg w-3/4 mx-auto animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto animate-pulse"></div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="animate-pulse space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+              <div className="h-11 bg-gray-200 rounded-lg animate-pulse"></div>
             </div>
-            <div className="animate-pulse space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+              <div className="h-11 bg-gray-200 rounded-lg animate-pulse"></div>
             </div>
-            <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-11 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg animate-pulse"></div>
           </div>
         </CardContent>
       </Card>

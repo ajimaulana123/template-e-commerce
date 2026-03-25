@@ -27,7 +27,9 @@ export const useProductSearch = (query: string, enabled: boolean = true) => {
         
         if (response.ok) {
           const data = await response.json()
-          setProducts(data.slice(0, 5)) // Limit to 5 results
+          // Handle both old format (array) and new format (object with products array)
+          const productsArray = Array.isArray(data) ? data : data.products || []
+          setProducts(productsArray.slice(0, 5)) // Limit to 5 results
         }
       } catch (error) {
         // Silent fail

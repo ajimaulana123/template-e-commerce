@@ -1,35 +1,53 @@
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 interface ProductCardSkeletonProps {
   columns?: number
 }
 
 export default function ProductCardSkeleton({ columns = 6 }: ProductCardSkeletonProps) {
-  const gridCols = {
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-    6: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-  }
-
   return (
     <section className="mb-8">
-      <div className="flex items-center mb-4">
-        <Skeleton className="w-6 h-6 mr-3" />
-        <Skeleton className="h-7 w-48" />
+      {/* Header Skeleton */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <Skeleton className="w-5 h-5 mr-2 rounded" />
+          <Skeleton className="h-6 w-48" />
+        </div>
+        <Skeleton className="h-5 w-24" />
       </div>
-      <div className={`grid ${gridCols[columns as keyof typeof gridCols]} gap-4`}>
+
+      {/* Product Grid Skeleton */}
+      <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
         {Array.from({ length: columns }).map((_, i) => (
-          <div key={i} className="bg-white rounded-lg overflow-hidden border">
-            <Skeleton className="w-full h-48" />
-            <div className="p-4 space-y-3">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-5 w-1/2" />
-              <Skeleton className="h-4 w-2/3" />
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-16" />
+          <Card key={i} className="overflow-hidden border border-gray-200">
+            <CardHeader className="p-0">
+              <Skeleton className="w-full h-48 bg-gray-100" />
+            </CardHeader>
+            <CardContent className="p-3 space-y-2">
+              {/* Product Name - 2 lines */}
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
               </div>
-            </div>
-          </div>
+              
+              {/* Rating and Sold */}
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Skeleton key={j} className="w-3 h-3 rounded-sm" />
+                  ))}
+                </div>
+                <Skeleton className="h-3 w-12" />
+              </div>
+
+              {/* Price */}
+              <Skeleton className="h-5 w-24" />
+              
+              {/* Original Price (optional) */}
+              <Skeleton className="h-3 w-20" />
+            </CardContent>
+          </Card>
         ))}
       </div>
     </section>

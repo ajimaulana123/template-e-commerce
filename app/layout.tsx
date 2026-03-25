@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Geist } from 'next/font/google'
 import './globals.css'
 import PerformanceMonitor from '@/components/PerformanceMonitor'
+import { Toaster } from '@/components/ui/toaster'
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         {process.env.NODE_ENV === 'development' && <PerformanceMonitor />}
         {children}
+        <Toaster />
       </body>
     </html>
   )
