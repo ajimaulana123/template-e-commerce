@@ -174,4 +174,26 @@ export const cacheTTL = {
   reviews: 300,          // 5 minutes
   questions: 300,        // 5 minutes
   analytics: 300,        // 5 minutes
+  profile: 600,          // 10 minutes
+}
+
+// Helper function to get cached profile
+export async function getCachedProfile(userId: string): Promise<any> {
+  const cacheKey = `profile:${userId}`
+  let profile = getCache(cacheKey)
+  
+  if (!profile) {
+    // Import prisma dynamically to avoid circular dependencies
+    const { default: prisma } = await import('@/lib/prisma')
+    
+    profile = await prisma.profile.findUnique({
+      where: { userId }
+    })
+    
+    if (profile) {
+      setCache(cacheKey, profile, cacheTTL.profile)
+    }
+  }
+  
+  return profile
 }

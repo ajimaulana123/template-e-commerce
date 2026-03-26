@@ -16,7 +16,7 @@ interface CartItem {
     name: string
     price: number
     originalPrice: number | null
-    image: string
+    images: string[]
     stock: number
     category: {
       name: string

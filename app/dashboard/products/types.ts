@@ -5,7 +5,7 @@ export interface Product {
   description: string | null
   price: number
   originalPrice: number | null
-  image: string
+  images: string[]
   stock: number
   sold: number
   rating: number
@@ -38,7 +38,7 @@ export interface CreateProductData {
   description: string | null
   price: number
   originalPrice: number | null
-  image: string
+  images: string[]
   stock: number
   categoryId: string
   badge: string | null
@@ -69,7 +69,7 @@ export interface ProductFormErrors {
   description?: string
   price?: string
   originalPrice?: string
-  image?: string
+  images?: string
   stock?: string
   categoryId?: string
   badge?: string

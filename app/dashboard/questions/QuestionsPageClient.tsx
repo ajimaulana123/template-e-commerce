@@ -19,7 +19,7 @@ interface Question {
   }
   product?: {
     name: string
-    image: string
+    images: string[]
   }
 }
 

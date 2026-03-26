@@ -16,8 +16,8 @@ export async function GET() {
     }
 
     // Return cached data if still valid
-    const now = Date.now()
-    if (cachedData && (now - cacheTimestamp) < CACHE_DURATION * 1000) {
+    const currentTime = Date.now()
+    if (cachedData && (currentTime - cacheTimestamp) < CACHE_DURATION * 1000) {
       return NextResponse.json(cachedData, {
         headers: {
           'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`,
