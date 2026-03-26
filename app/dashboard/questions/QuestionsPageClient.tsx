@@ -42,10 +42,14 @@ export default function QuestionsPageClient() {
       const response = await fetch(`/api/questions?filter=${filter}`)
       if (response.ok) {
         const data = await response.json()
-        setQuestions(data)
+        // Handle the new API response format
+        setQuestions(data.questions || [])
+      } else {
+        setQuestions([])
       }
     } catch (error) {
       console.error('Failed to fetch questions:', error)
+      setQuestions([])
     } finally {
       setLoading(false)
     }
@@ -152,7 +156,7 @@ export default function QuestionsPageClient() {
       </div>
 
       {/* Questions List */}
-      {questions.length === 0 ? (
+      {!Array.isArray(questions) || questions.length === 0 ? (
         <div className="bg-white rounded-lg p-12 text-center">
           <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">
