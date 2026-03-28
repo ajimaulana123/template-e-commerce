@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Product, Category } from './types'
@@ -159,17 +160,18 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Daftar Produk ({products.length})</CardTitle>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <CardTitle className="text-lg sm:text-xl">Daftar Produk ({products.length})</CardTitle>
+            <div className="flex flex-wrap gap-2">
               {!selectMode ? (
                 <>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectMode(true)}
+                    className="text-xs sm:text-sm"
                   >
-                    <i className="fas fa-check-square mr-2"></i>
+                    <i className="fas fa-check-square mr-1 sm:mr-2"></i>
                     Select Mode
                   </Button>
                   <Button
@@ -177,20 +179,22 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
                     variant="destructive"
                     onClick={handleDeleteAll}
                     disabled={loading || products.length === 0}
+                    className="text-xs sm:text-sm"
                   >
-                    <i className="fas fa-trash-alt mr-2"></i>
+                    <i className="fas fa-trash-alt mr-1 sm:mr-2"></i>
                     Delete All
                   </Button>
                 </>
               ) : (
                 <>
-                  <span className="text-sm text-gray-600 self-center">
+                  <span className="text-xs sm:text-sm text-gray-600 self-center">
                     {selectedProducts.size} selected
                   </span>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={selectAll}
+                    className="text-xs sm:text-sm"
                   >
                     Select All
                   </Button>
@@ -198,6 +202,7 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
                     size="sm"
                     variant="outline"
                     onClick={deselectAll}
+                    className="text-xs sm:text-sm"
                   >
                     Deselect All
                   </Button>
@@ -206,8 +211,9 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
                     variant="destructive"
                     onClick={handleBulkDelete}
                     disabled={loading || selectedProducts.size === 0}
+                    className="text-xs sm:text-sm"
                   >
-                    <i className="fas fa-trash mr-2"></i>
+                    <i className="fas fa-trash mr-1 sm:mr-2"></i>
                     Delete ({selectedProducts.size})
                   </Button>
                   <Button
@@ -217,6 +223,7 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
                       setSelectMode(false)
                       setSelectedProducts(new Set())
                     }}
+                    className="text-xs sm:text-sm"
                   >
                     Cancel
                   </Button>
@@ -225,40 +232,45 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-3 sm:p-6">
+          <div className="space-y-3 sm:space-y-4">
             {products.map((product) => (
               <div
                 key={product.id}
-                className={`p-4 rounded-lg space-y-3 ${
+                className={`p-3 sm:p-4 rounded-lg space-y-3 ${
                   selectMode && selectedProducts.has(product.id)
                     ? 'bg-blue-50 border-2 border-blue-500'
                     : 'bg-gray-50'
                 }`}
               >
-                <div className="flex items-start space-x-3">
+                <div className="flex items-start space-x-2 sm:space-x-3">
                   {selectMode && (
                     <input
                       type="checkbox"
                       checked={selectedProducts.has(product.id)}
                       onChange={() => toggleSelectProduct(product.id)}
-                      className="mt-1 w-5 h-5 cursor-pointer"
+                      className="mt-1 w-4 h-4 sm:w-5 sm:h-5 cursor-pointer"
                     />
                   )}
-                  <img
-                    src={product.images?.[0] || '/placeholder.png'}
-                    alt={product.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded flex-shrink-0 overflow-hidden bg-gray-100">
+                    <Image
+                      src={product.images?.[0] || '/placeholder.svg'}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 48px, 64px"
+                      priority={false}
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-2">
                       {product.name}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600">
                       {product.category.name}
                     </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-sm font-bold text-blue-600">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                      <span className="text-sm sm:text-base font-bold text-blue-600">
                         {formatPrice(product.price)}
                       </span>
                       {product.originalPrice && (
@@ -267,12 +279,12 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
                         </span>
                       )}
                       {product.badge && (
-                        <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded">
+                        <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">
                           {product.badge}
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center space-x-3 mt-1 text-xs text-gray-600">
+                    <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-3 gap-1 sm:gap-0 mt-2 text-xs text-gray-600">
                       <span>Stock: {product.stock}</span>
                       <span>Sold: {product.sold}</span>
                       <span>Rating: {product.rating.toFixed(1)}</span>
@@ -280,31 +292,34 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
                     </div>
                   </div>
                   {!selectMode && (
-                    <div className="flex flex-col space-y-2">
+                    <div className="flex flex-col sm:flex-col space-y-1 sm:space-y-2 flex-shrink-0">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onViewDetails(product)}
+                        className="text-xs px-2 py-1 sm:px-3 sm:py-2"
                       >
-                        <i className="fas fa-eye mr-2"></i>
-                        View
+                        <i className="fas fa-eye sm:mr-2"></i>
+                        <span className="hidden sm:inline">View</span>
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(product)}
+                        className="text-xs px-2 py-1 sm:px-3 sm:py-2"
                       >
-                        <i className="fas fa-edit mr-2"></i>
-                        Edit
+                        <i className="fas fa-edit sm:mr-2"></i>
+                        <span className="hidden sm:inline">Edit</span>
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => handleDelete(product.id, product.name)}
                         disabled={loading}
+                        className="text-xs px-2 py-1 sm:px-3 sm:py-2"
                       >
-                        <i className="fas fa-trash mr-2"></i>
-                        Delete
+                        <i className="fas fa-trash sm:mr-2"></i>
+                        <span className="hidden sm:inline">Delete</span>
                       </Button>
                     </div>
                   )}
@@ -314,8 +329,8 @@ export default function ProductList({ products, categories, onViewDetails }: Pro
 
             {products.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                <i className="fas fa-box text-4xl mb-4"></i>
-                <p>Belum ada produk</p>
+                <i className="fas fa-box text-3xl sm:text-4xl mb-4"></i>
+                <p className="text-sm sm:text-base">Belum ada produk</p>
               </div>
             )}
           </div>

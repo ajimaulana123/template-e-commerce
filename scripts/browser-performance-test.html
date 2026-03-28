@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Testing Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 30px; }
+        .metric {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .good { background: #d4edda; color: #155724; }
+        .bad { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Performance Testing Dashboard</h1>
+        <p>Test semua optimasi performa yang sudah diterapkan</p>
+
+        <div class="test-section">
+            <h2>1. API Cache Performance Test</h2>
+            <p>Test cache performance untuk API endpoints utama</p>
+            <button class="test-button" onclick="testAPICache()">Test API Cache</button>
+            <div id="api-results" class="results" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Image Optimization Test</h2>
+            <p>Test optimasi gambar dan format yang digunakan</p>
+            <button class="test-button" onclick="testImageOptimization()">Test Image Optimization</button>
+            <div id="image-results" class="results" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Loading States Test</h2>
+            <p>Test skeleton loading dan loading states</p>
+            <button class="test-button" onclick="testLoadingStates()">Test Loading States</button>
+            <div id="loading-results" class="results" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Performance Metrics</h2>
+            <p>Metrics performa halaman saat ini</p>
+            <button class="test-button" onclick="measurePerformance()">Measure Performance</button>
+            <div id="performance-results" class="results" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Cache Invalidation Test</h2>
+            <p>Test pembersihan cache otomatis</p>
+            <button class="test-button" onclick="testCacheInvalidation()">Test Cache Invalidation</button>
+            <div id="cache-results" class="results" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+        
+        // Test API Cache Performance
+        async function testAPICache() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '🔄 Testing API cache performance...\n\n';
+            
+            const endpoints = [
+                '/api/dashboard/stats',
+                '/api/analytics',
+                '/api/products?page=1&limit=10',
+                '/api/categories'
+            ];
+            
+            const results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    // First request (should be MISS or slow)
+                    const start1 = performance.now();
+                    const response1 = await fetch(BASE_URL + endpoint);
+                    const end1 = performance.now();
+                    const time1 = Math.round(end1 - start1);
+                    const cache1 = response1.headers.get('X-Cache') || 'UNKNOWN';
+                    
+                    // Wait a bit
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Second request (should be HIT or faster)
+                    const start2 = performance.now();
+                    const response2 = await fetch(BASE_URL + endpoint);
+                    const end2 = performance.now();
+                    const time2 = Math.round(end2 - start2);
+                    const cache2 = response2.headers.get('X-Cache') || 'UNKNOWN';
+                    
+                    const improvement = time1 > 0 ? Math.round(((time1 - time2) / time1) * 100) : 0;
+                    
+                    results.push({
+                        endpoint,
+                        first: { time: time1, cache: cache1 },
+                        second: { time: time2, cache: cache2 },
+                        improvement
+                    });
+                    
+                    resultsDiv.innerHTML += `✅ ${endpoint}\n`;
+                    resultsDiv.innerHTML += `   First:  ${time1}ms (${cache1})\n`;
+                    resultsDiv.innerHTML += `   Second: ${time2}ms (${cache2})\n`;
+                    resultsDiv.innerHTML += `   Improvement: ${improvement}%\n\n`;
+                    
+                } catch (error) {
+                    resultsDiv.innerHTML += `❌ ${endpoint}: ${error.message}\n\n`;
+                }
+            }
+            
+            // Summary
+            const avgImprovement = results.reduce((sum, r) => sum + r.improvement, 0) / results.length;
+            const cachedEndpoints = results.filter(r => r.second.cache === 'HIT').length;
+            
+            resultsDiv.innerHTML += `\n📊 Summary:\n`;
+            resultsDiv.innerHTML += `- Cached endpoints: ${cachedEndpoints}/${results.length}\n`;
+            resultsDiv.innerHTML += `- Average improvement: ${Math.round(avgImprovement)}%\n`;
+            
+            if (avgImprovement > 70) {
+                resultsDiv.innerHTML += `\n✅ Cache performance: EXCELLENT (${Math.round(avgImprovement)}% improvement)`;
+            } else if (avgImprovement > 40) {
+                resultsDiv.innerHTML += `\n⚠️  Cache performance: GOOD (${Math.round(avgImprovement)}% improvement)`;
+            } else {
+                resultsDiv.innerHTML += `\n❌ Cache performance: NEEDS IMPROVEMENT (${Math.round(avgImprovement)}% improvement)`;
+            }
+        }
+        
+        // Test Image Optimization
+        async function testImageOptimization() {
+            const resultsDiv = document.getElementById('image-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '🔄 Testing image optimization...\n\n';
+            
+            // Check if page has Next.js Image components
+            const images = document.querySelectorAll('img');
+            const nextImages = document.querySelectorAll('img[data-nimg]');
+            
+            resultsDiv.innerHTML += `📊 Image Analysis:\n`;
+            resultsDiv.innerHTML += `- Total images: ${images.length}\n`;
+            resultsDiv.innerHTML += `- Next.js optimized images: ${nextImages.length}\n`;
+            resultsDiv.innerHTML += `- Optimization rate: ${Math.round((nextImages.length / images.length) * 100)}%\n\n`;
+            
+            // Check image formats in network requests
+            if ('performance' in window && 'getEntriesByType' in performance) {
+                const resources = performance.getEntriesByType('resource');
+                const imageResources = resources.filter(r => r.name.match(/\.(jpg|jpeg|png|webp|avif)$/i));
+                
+                const formats = {};
+                imageResources.forEach(img => {
+                    const ext = img.name.split('.').pop().toLowerCase();
+                    formats[ext] = (formats[ext] || 0) + 1;
+                });
+                
+                resultsDiv.innerHTML += `🖼️  Image Formats Used:\n`;
+                Object.entries(formats).forEach(([format, count]) => {
+                    const isOptimized = ['webp', 'avif'].includes(format);
+                    const status = isOptimized ? '✅' : '⚠️';
+                    resultsDiv.innerHTML += `${status} ${format.toUpperCase()}: ${count} images\n`;
+                });
+                
+                const optimizedCount = (formats.webp || 0) + (formats.avif || 0);
+                const totalImages = Object.values(formats).reduce((sum, count) => sum + count, 0);
+                const optimizationRate = totalImages > 0 ? Math.round((optimizedCount / totalImages) * 100) : 0;
+                
+                resultsDiv.innerHTML += `\n📈 Format Optimization: ${optimizationRate}%\n`;
+                
+                if (optimizationRate > 80) {
+                    resultsDiv.innerHTML += `✅ Image optimization: EXCELLENT`;
+                } else if (optimizationRate > 50) {
+                    resultsDiv.innerHTML += `⚠️  Image optimization: GOOD`;
+                } else {
+                    resultsDiv.innerHTML += `❌ Image optimization: NEEDS IMPROVEMENT`;
+                }
+            }
+        }
+        
+        // Test Loading States
+        async function testLoadingStates() {
+            const resultsDiv = document.getElementById('loading-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '🔄 Testing loading states...\n\n';
+            
+            // Check for skeleton components
+            const skeletons = document.querySelectorAll('[class*="skeleton"], [class*="animate-pulse"]');
+            resultsDiv.innerHTML += `💀 Skeleton elements found: ${skeletons.length}\n`;
+            
+            // Test navigation to dashboard pages
+            const testPages = [
+                '/dashboard',
+                '/dashboard/analytics', 
+                '/dashboard/orders',
+                '/dashboard/categories'
+            ];
+            
+            resultsDiv.innerHTML += `\n🧪 Testing navigation loading states:\n`;
+            
+            for (const page of testPages) {
+                try {
+                    const start = performance.now();
+                    const response = await fetch(BASE_URL + page);
+                    const end = performance.now();
+                    const time = Math.round(end - start);
+                    
+                    if (response.ok) {
+                        resultsDiv.innerHTML += `✅ ${page}: ${time}ms\n`;
+                    } else {
+                        resultsDiv.innerHTML += `❌ ${page}: ${response.status}\n`;
+                    }
+                } catch (error) {
+                    resultsDiv.innerHTML += `❌ ${page}: ${error.message}\n`;
+                }
+            }
+            
+            resultsDiv.innerHTML += `\n💡 Tip: Open DevTools Network tab and set to "Slow 3G" to see loading states better`;
+        }
+        
+        // Measure Performance
+        async function measurePerformance() {
+            const resultsDiv = document.getElementById('performance-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '🔄 Measuring performance metrics...\n\n';
+            
+            // Navigation Timing API
+            if ('performance' in window && 'timing' in performance) {
+                const timing = performance.timing;
+                const navigation = performance.navigation;
+                
+                const pageLoadTime = timing.loadEventEnd - timing.navigationStart;
+                const domContentLoaded = timing.domContentLoadedEventEnd - timing.navigationStart;
+                const firstPaint = timing.responseStart - timing.navigationStart;
+                
+                resultsDiv.innerHTML += `⏱️  Performance Metrics:\n`;
+                resultsDiv.innerHTML += `- Page Load Time: ${pageLoadTime}ms\n`;
+                resultsDiv.innerHTML += `- DOM Content Loaded: ${domContentLoaded}ms\n`;
+                resultsDiv.innerHTML += `- First Paint: ${firstPaint}ms\n`;
+                resultsDiv.innerHTML += `- Navigation Type: ${navigation.type === 0 ? 'Navigate' : navigation.type === 1 ? 'Reload' : 'Back/Forward'}\n\n`;
+                
+                // Performance assessment
+                if (pageLoadTime < 2000) {
+                    resultsDiv.innerHTML += `✅ Page Load: EXCELLENT (${pageLoadTime}ms)`;
+                } else if (pageLoadTime < 4000) {
+                    resultsDiv.innerHTML += `⚠️  Page Load: GOOD (${pageLoadTime}ms)`;
+                } else {
+                    resultsDiv.innerHTML += `❌ Page Load: NEEDS IMPROVEMENT (${pageLoadTime}ms)`;
+                }
+            }
+            
+            // Resource timing
+            if ('performance' in window && 'getEntriesByType' in performance) {
+                const resources = performance.getEntriesByType('resource');
+                const apiCalls = resources.filter(r => r.name.includes('/api/'));
+                
+                resultsDiv.innerHTML += `\n\n🌐 API Performance:\n`;
+                apiCalls.forEach(api => {
+                    const url = api.name.replace(BASE_URL, '');
+                    const time = Math.round(api.responseEnd - api.requestStart);
+                    resultsDiv.innerHTML += `- ${url}: ${time}ms\n`;
+                });
+            }
+        }
+        
+        // Test Cache Invalidation
+        async function testCacheInvalidation() {
+            const resultsDiv = document.getElementById('cache-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '🔄 Testing cache invalidation...\n\n';
+            
+            try {
+                // Test manual cache clearing
+                resultsDiv.innerHTML += `🧹 Testing manual cache clearing:\n`;
+                
+                const endpoints = [
+                    '/api/dashboard/stats',
+                    '/api/analytics'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(BASE_URL + endpoint, {
+                            method: 'POST'
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            resultsDiv.innerHTML += `✅ ${endpoint}: ${result.message || 'Cache cleared'}\n`;
+                        } else {
+                            resultsDiv.innerHTML += `❌ ${endpoint}: ${response.status}\n`;
+                        }
+                    } catch (error) {
+                        resultsDiv.innerHTML += `❌ ${endpoint}: ${error.message}\n`;
+                    }
+                }
+                
+                resultsDiv.innerHTML += `\n💡 Cache invalidation endpoints are working!\n`;
+                resultsDiv.innerHTML += `   Next requests should show X-Cache: MISS`;
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `❌ Error testing cache invalidation: ${error.message}`;
+            }
+        }
+        
+        // Auto-run basic performance measurement on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                measurePerformance();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

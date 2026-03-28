@@ -22,7 +22,10 @@
     "test:all": "node scripts/run-all-tests.bat",
     "test:keep-data": "node scripts/run-tests-keep-data.bat",
     "test:prodi": "playwright test tests/prodi.spec.ts",
-    "test:prodi:ui": "playwright test tests/prodi.spec.ts --ui"
+    "test:prodi:ui": "playwright test tests/prodi.spec.ts --ui",
+    "perf:test": "node scripts/test-performance.js",
+    "perf:quick": "scripts/quick-performance-test.bat",
+    "perf:browser": "start scripts/browser-performance-test.html"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
-import { getCache, setCache, deleteCachePattern, cacheKeys, cacheTTL } from '@/lib/cache'
+import { getCache, setCache, deleteCachePattern, cacheKeys, cacheTTL, deleteCache } from '@/lib/cache'
 
 // GET all products with pagination
 export async function GET(request: Request) {
@@ -12,6 +12,22 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
+
+    // Build cache key based on parameters
+    const cacheKey = cacheKeys.products(page, limit) + 
+      (categoryId ? `:cat:${categoryId}` : '') + 
+      (search ? `:search:${search}` : '')
+
+    // Check cache first
+    const cachedData = getCache(cacheKey)
+    if (cachedData) {
+      return NextResponse.json(cachedData, {
+        headers: {
+          'Cache-Control': `public, s-maxage=${cacheTTL.products}, stale-while-revalidate=${cacheTTL.products * 2}`,
+          'X-Cache': 'HIT'
+        }
+      })
+    }
 
     // Build where clause
     const where: any = {}
@@ -39,7 +55,7 @@ export async function GET(request: Request) {
       take: limit
     })
 
-    return NextResponse.json({
+    const responseData = {
       products,
       pagination: {
         page,
@@ -47,10 +63,17 @@ export async function GET(request: Request) {
         totalCount,
         totalPages: Math.ceil(totalCount / limit),
         hasMore: skip + products.length < totalCount
-      }
-    }, {
+      },
+      lastUpdated: new Date().toISOString()
+    }
+
+    // Cache the result
+    setCache(cacheKey, responseData, cacheTTL.products)
+
+    return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
+        'Cache-Control': `public, s-maxage=${cacheTTL.products}, stale-while-revalidate=${cacheTTL.products * 2}`,
+        'X-Cache': 'MISS'
       }
     })
   } catch (error) {
@@ -89,6 +112,10 @@ export async function POST(request: Request) {
     // Invalidate product caches
     deleteCachePattern('products:.*')
     deleteCachePattern('product:.*')
+    
+    // Invalidate dashboard stats and analytics cache since product count changed
+    deleteCache(cacheKeys.dashboardStats())
+    deleteCache(cacheKeys.analytics())
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {

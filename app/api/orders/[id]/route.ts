@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
 import { logger } from '@/lib/logger'
+import { deleteCache, cacheKeys } from '@/lib/cache'
 
 // GET single order
 export async function GET(
@@ -99,6 +100,10 @@ export async function PUT(
       paymentStatus: order.paymentStatus
     })
 
+    // Invalidate caches since order status changed
+    deleteCache(cacheKeys.dashboardStats())
+    deleteCache(cacheKeys.analytics())
+
     return NextResponse.json(order)
   } catch (error) {
     logger.error('Failed to update order', error)
@@ -165,6 +170,10 @@ export async function DELETE(
       orderNumber: order.orderNumber,
       userId: session.userId
     })
+
+    // Invalidate caches since order was cancelled
+    deleteCache(cacheKeys.dashboardStats())
+    deleteCache(cacheKeys.analytics())
 
     return NextResponse.json({ success: true })
   } catch (error) {

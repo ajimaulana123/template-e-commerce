@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -312,11 +313,16 @@ export default function CheckoutPageClient() {
             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex space-x-3">
-                  <img
-                    src={item.product.images?.[0] || '/placeholder.png'}
-                    alt={item.product.name}
-                    className="w-12 h-12 object-cover rounded"
-                  />
+                  <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100">
+                    <Image
+                      src={item.product.images?.[0] || '/placeholder.svg'}
+                      alt={item.product.name}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                      priority={false}
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {item.product.name}

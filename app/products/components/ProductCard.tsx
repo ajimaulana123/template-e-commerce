@@ -28,7 +28,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
 
         <div className="relative h-48">
           <Image
-            src={product.images[0] || '/placeholder.png'}
+            src={product.images[0] || '/placeholder.svg'}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

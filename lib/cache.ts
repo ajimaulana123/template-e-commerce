@@ -163,6 +163,7 @@ export const cacheKeys = {
   reviews: (productId: string) => `reviews:${productId}`,
   questions: (productId: string) => `questions:${productId}`,
   analytics: () => 'analytics:data',
+  dashboardStats: () => 'dashboard:stats',
 }
 
 // Cache TTL constants (in seconds)
@@ -175,6 +176,7 @@ export const cacheTTL = {
   questions: 300,        // 5 minutes
   analytics: 300,        // 5 minutes
   profile: 600,          // 10 minutes
+  dashboardStats: 300,   // 5 minutes
 }
 
 // Helper function to get cached profile

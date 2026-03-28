@@ -1,28 +1,9 @@
 import { verifySession } from '@/lib/session'
 import Link from 'next/link'
-import prisma from '@/lib/prisma'
-import { Card, CardContent } from '@/components/ui/card'
+import DashboardStatsClient from './DashboardStatsClient'
 
 export default async function DashboardPage() {
   const session = await verifySession()
-
-  // Get quick stats for admin
-  let quickStats = null
-  if (session?.role === 'ADMIN') {
-    const [totalOrders, totalProducts, totalUsers, pendingOrders] = await Promise.all([
-      prisma.order.count(),
-      prisma.product.count(),
-      prisma.user.count(),
-      prisma.order.count({ where: { status: 'PENDING' } })
-    ])
-
-    quickStats = {
-      totalOrders,
-      totalProducts,
-      totalUsers,
-      pendingOrders
-    }
-  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -35,81 +16,8 @@ export default async function DashboardPage() {
           <p className="text-gray-600">Kelola toko online Anda dengan mudah dari sini</p>
         </div>
         
-        {/* Quick Stats for Admin */}
-        {session?.role === 'ADMIN' && quickStats && (
-          <div className="mb-8">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Ringkasan Toko</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Pesanan</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900">{quickStats.totalOrders}</p>
-                      <p className="text-xs text-gray-500 mt-1">Semua pesanan</p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Produk</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900">{quickStats.totalProducts}</p>
-                      <p className="text-xs text-gray-500 mt-1">Produk dijual</p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Pelanggan</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900">{quickStats.totalUsers}</p>
-                      <p className="text-xs text-gray-500 mt-1">Pengguna terdaftar</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow border-orange-200 bg-orange-50">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-orange-700 mb-1 font-medium">Perlu Diproses</p>
-                      <p className="text-xl sm:text-2xl font-bold text-orange-900">{quickStats.pendingOrders}</p>
-                      <p className="text-xs text-orange-600 mt-1">Pesanan pending</p>
-                    </div>
-                    <div className="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
+        {/* Quick Stats for Admin - Now with caching and loading states */}
+        {session?.role === 'ADMIN' && <DashboardStatsClient />}
 
         {/* Admin Quick Links */}
         {session?.role === 'ADMIN' && (

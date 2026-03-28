@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Image from 'next/image'
 
 interface ProductImageGalleryProps {
   images: string[]
@@ -18,19 +19,22 @@ export function ProductImageGallery({
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative bg-white rounded-lg overflow-hidden border">
-        <img
+      <div className="relative bg-white rounded-lg overflow-hidden border aspect-square">
+        <Image
           src={images[selectedImage]}
           alt={productName}
-          className="w-full h-96 object-cover"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+          priority={true}
         />
         {badge && (
-          <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+          <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
             {badge}
           </div>
         )}
         {discount && (
-          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
             -{discount}%
           </div>
         )}
@@ -42,14 +46,17 @@ export function ProductImageGallery({
           <button
             key={index}
             onClick={() => setSelectedImage(index)}
-            className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden ${
+            className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden relative ${
               selectedImage === index ? 'border-blue-500' : 'border-gray-200'
             }`}
           >
-            <img
+            <Image
               src={image}
               alt={`${productName} ${index + 1}`}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="64px"
+              priority={index < 4}
             />
           </button>
         ))}

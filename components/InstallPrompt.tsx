@@ -9,10 +9,27 @@ export default function InstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false)
 
   useEffect(() => {
+    // Check if user has already dismissed the prompt
+    const isDismissed = localStorage.getItem('pwa-install-dismissed')
+    const isInstalled = localStorage.getItem('pwa-installed')
+    
+    if (isDismissed || isInstalled) {
+      return
+    }
+
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
       setShowPrompt(true)
+    }
+
+    // Check if app is already installed
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    const isInWebAppiOS = (window.navigator as any).standalone === true
+    
+    if (isStandalone || isInWebAppiOS) {
+      localStorage.setItem('pwa-installed', 'true')
+      return
     }
 
     window.addEventListener('beforeinstallprompt', handler)
@@ -29,16 +46,27 @@ export default function InstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
+      localStorage.setItem('pwa-installed', 'true')
+      setShowPrompt(false)
+    } else {
+      // User declined, don't show again for a while
+      localStorage.setItem('pwa-install-dismissed', 'true')
       setShowPrompt(false)
     }
 
     setDeferredPrompt(null)
   }
 
+  const handleDismiss = () => {
+    // User dismissed, don't show again
+    localStorage.setItem('pwa-install-dismissed', 'true')
+    setShowPrompt(false)
+  }
+
   if (!showPrompt) return null
 
   return (
-    <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-40 max-w-[calc(100vw-2rem)] sm:max-w-sm">
+    <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 max-w-[calc(100vw-2rem)] sm:max-w-sm" style={{ zIndex: 9997 }}>
       <Card className="p-3 sm:p-4 shadow-xl border-2 border-blue-500 bg-white">
         <div className="flex items-start gap-2 sm:gap-3">
           <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -72,7 +100,7 @@ export default function InstallPrompt() {
                 Install
               </Button>
               <Button
-                onClick={() => setShowPrompt(false)}
+                onClick={handleDismiss}
                 size="sm"
                 variant="outline"
                 className="text-xs sm:text-sm"
@@ -82,7 +110,7 @@ export default function InstallPrompt() {
             </div>
           </div>
           <button
-            onClick={() => setShowPrompt(false)}
+            onClick={handleDismiss}
             className="text-gray-400 hover:text-gray-600 flex-shrink-0"
           >
             <svg

@@ -81,25 +81,26 @@ CONTOH PERTANYAAN YANG BISA DIJAWAB:
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Search */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Product Management</h1>
         <Input
           placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md"
+          className="w-full sm:max-w-md"
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Create Product Form */}
-        <div>
+        <div className="order-2 lg:order-1">
           <ProductForm categories={categories} />
         </div>
 
         {/* Product List */}
-        <div>
+        <div className="order-1 lg:order-2">
           <ProductList
             products={filteredProducts}
             categories={categories}

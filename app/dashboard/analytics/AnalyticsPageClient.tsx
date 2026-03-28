@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { exportToCSV } from './utils'
+import AnalyticsPageSkeleton from '@/components/skeletons/AnalyticsPageSkeleton'
 
 interface AnalyticsData {
   overview: {
@@ -124,18 +125,7 @@ export default function AnalyticsPageClient() {
   }
 
   if (loading) {
-    return (
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+    return <AnalyticsPageSkeleton />
   }
 
   if (!data) {
@@ -335,13 +325,14 @@ export default function AnalyticsPageClient() {
                     #{index + 1}
                   </span>
                   {product.images[0] && (
-                    <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                    <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100">
                       <Image
                         src={product.images[0]}
                         alt={product.name}
                         fill
                         className="object-cover"
                         sizes="48px"
+                        priority={false}
                       />
                     </div>
                   )}

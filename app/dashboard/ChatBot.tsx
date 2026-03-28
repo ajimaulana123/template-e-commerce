@@ -94,7 +94,7 @@ export default function ChatBot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-50"
+        className="chatbot-button bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
       >
         <svg
           className="w-5 h-5 sm:w-6 sm:h-6"
@@ -114,24 +114,54 @@ export default function ChatBot() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-8rem)] sm:h-[600px] max-h-[600px] shadow-2xl rounded-lg overflow-hidden z-50">
-      <Card className="h-full flex flex-col">
-        <CardHeader className="bg-blue-600 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg">AI Assistant</CardTitle>
-              {pageContext && (
-                <p className="text-xs text-blue-100 mt-1">
-                  📊 Context: {pageContext.split('\n')[0].replace('Context: ', '')}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
+    <>
+      {/* Backdrop overlay */}
+      <div 
+        className="chatbot-overlay inset-0 bg-black bg-opacity-20 backdrop-blur-sm"
+        onClick={() => setIsOpen(false)}
+      />
+      
+      {/* Chat window */}
+      <div 
+        className="chatbot-window bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-8rem)] sm:h-[600px] max-h-[600px] shadow-2xl rounded-lg overflow-hidden"
+      >
+        <Card className="h-full flex flex-col bg-white border-0 shadow-none">
+          <CardHeader className="bg-blue-600 text-white rounded-t-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-lg">AI Assistant</CardTitle>
+                {pageContext && (
+                  <p className="text-xs text-blue-100 mt-1">
+                    📊 Context: {pageContext.split('\n')[0].replace('Context: ', '')}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {messages.length > 0 && (
+                  <button
+                    onClick={clearChat}
+                    className="hover:bg-blue-700 rounded p-1 transition-colors"
+                    title="Clear chat"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                )}
                 <button
-                  onClick={clearChat}
+                  onClick={() => setIsOpen(false)}
                   className="hover:bg-blue-700 rounded p-1 transition-colors"
-                  title="Clear chat"
+                  title="Close chat"
                 >
                   <svg
                     className="w-5 h-5"
@@ -143,16 +173,68 @@ export default function ChatBot() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
                 </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="hover:bg-blue-700 rounded p-1 transition-colors"
-                title="Close chat"
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+            {messages.length === 0 && (
+              <div className="text-center text-gray-500 mt-8">
+                <p>👋 Halo! Ada yang bisa saya bantu?</p>
+                {pageContext && (
+                  <p className="text-xs mt-2 text-blue-600">
+                    Saya punya akses ke data halaman ini
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {messages.filter(m => m.role !== 'system').map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-lg px-4 py-2">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </CardContent>
+          
+          <div className="p-4 border-t bg-white rounded-b-lg">
+            <form onSubmit={sendMessage} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ketik pesan..."
+                disabled={isLoading}
+                className="flex-1"
+              />
+              <Button type="submit" disabled={isLoading || !input.trim()}>
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -163,85 +245,14 @@ export default function ChatBot() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                   />
                 </svg>
-              </button>
-            </div>
+              </Button>
+            </form>
           </div>
-        </CardHeader>
-        
-        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-gray-500 mt-8">
-              <p>👋 Halo! Ada yang bisa saya bantu?</p>
-              {pageContext && (
-                <p className="text-xs mt-2 text-blue-600">
-                  Saya punya akses ke data halaman ini
-                </p>
-              )}
-            </div>
-          )}
-          
-          {messages.filter(m => m.role !== 'system').map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  msg.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-              </div>
-            </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg px-4 py-2">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
-        </CardContent>
-        
-        <div className="p-4 border-t">
-          <form onSubmit={sendMessage} className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ketik pesan..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button type="submit" disabled={isLoading || !input.trim()}>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
-            </Button>
-          </form>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   )
 }

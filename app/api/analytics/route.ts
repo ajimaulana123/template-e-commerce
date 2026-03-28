@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
-
-// Cache configuration
-const CACHE_DURATION = 60 * 5 // 5 minutes in seconds
-let cachedData: any = null
-let cacheTimestamp: number = 0
+import { getCache, setCache, deleteCache, cacheKeys, cacheTTL } from '@/lib/cache'
 
 export async function GET() {
   try {
@@ -15,12 +11,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Return cached data if still valid
-    const currentTime = Date.now()
-    if (cachedData && (currentTime - cacheTimestamp) < CACHE_DURATION * 1000) {
+    // Check cache first
+    const cacheKey = cacheKeys.analytics()
+    const cachedData = getCache(cacheKey)
+    
+    if (cachedData) {
       return NextResponse.json(cachedData, {
         headers: {
-          'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`,
+          'Cache-Control': `public, s-maxage=${cacheTTL.analytics}, stale-while-revalidate=${cacheTTL.analytics * 2}`,
           'X-Cache': 'HIT'
         }
       })
@@ -169,16 +167,16 @@ export async function GET() {
         name,
         revenue
       })),
-      recentOrders
+      recentOrders,
+      lastUpdated: new Date().toISOString()
     }
 
-    // Update cache
-    cachedData = responseData
-    cacheTimestamp = Date.now()
+    // Cache the data
+    setCache(cacheKey, responseData, cacheTTL.analytics)
 
     return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`,
+        'Cache-Control': `public, s-maxage=${cacheTTL.analytics}, stale-while-revalidate=${cacheTTL.analytics * 2}`,
         'X-Cache': 'MISS'
       }
     })
@@ -200,11 +198,11 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Clear cache
-    cachedData = null
-    cacheTimestamp = 0
+    // Clear analytics cache
+    const cacheKey = cacheKeys.analytics()
+    deleteCache(cacheKey)
 
-    return NextResponse.json({ success: true, message: 'Cache cleared' })
+    return NextResponse.json({ success: true, message: 'Analytics cache cleared' })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to clear cache' }, { status: 500 })
   }

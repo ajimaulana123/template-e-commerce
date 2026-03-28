@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import prisma from '@/lib/prisma'
 import { logger } from '@/lib/logger'
+import { deleteCache, cacheKeys } from '@/lib/cache'
 
 // GET user orders
 export async function GET() {
@@ -143,6 +144,10 @@ export async function POST(request: Request) {
       userId: session.userId,
       total: order.total
     })
+
+    // Invalidate caches since order count and analytics changed
+    deleteCache(cacheKeys.dashboardStats())
+    deleteCache(cacheKeys.analytics())
 
     return NextResponse.json({ 
       success: true, 

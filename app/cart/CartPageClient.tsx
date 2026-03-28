@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Minus, Trash2, ShoppingBag, MessageCircle } from 'lucide-react'
@@ -45,7 +46,7 @@ export default function CartPageClient() {
       product: {
         name: item.product.name,
         price: item.product.price,
-        image: item.product.images?.[0] || '/placeholder.png'
+        image: item.product.images?.[0] || '/placeholder.svg'
       }
     }))
     
@@ -130,11 +131,16 @@ export default function CartPageClient() {
 
                 <div className="flex gap-3 mb-3">
                   <Link href={`/products/${item.productId}`} className="flex-shrink-0">
-                    <img
-                      src={item.product.images?.[0] || '/placeholder.png'}
-                      alt={item.product.name}
-                      className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80"
-                    />
+                    <div className="relative w-20 h-20 rounded overflow-hidden bg-gray-100">
+                      <Image
+                        src={item.product.images?.[0] || '/placeholder.svg'}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover cursor-pointer hover:opacity-80"
+                        sizes="80px"
+                        priority={false}
+                      />
+                    </div>
                   </Link>
                   <div className="flex-1">
                     <p className="text-xs text-gray-600 mb-2">{item.product.category?.name || 'Product'}</p>
@@ -194,11 +200,16 @@ export default function CartPageClient() {
               {/* Desktop Layout - Horizontal */}
               <div className="hidden sm:flex gap-4">
                 <Link href={`/products/${item.productId}`} className="flex-shrink-0">
-                  <img
-                    src={item.product.images?.[0] || '/placeholder.png'}
-                    alt={item.product.name}
-                    className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80"
-                  />
+                  <div className="relative w-20 h-20 rounded overflow-hidden bg-gray-100">
+                    <Image
+                      src={item.product.images?.[0] || '/placeholder.svg'}
+                      alt={item.product.name}
+                      fill
+                      className="object-cover cursor-pointer hover:opacity-80"
+                      sizes="80px"
+                      priority={false}
+                    />
+                  </div>
                 </Link>
 
                 <div className="flex-1 min-w-0 flex flex-col">

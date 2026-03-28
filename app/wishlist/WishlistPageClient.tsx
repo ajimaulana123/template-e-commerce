@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -142,14 +143,17 @@ export default function WishlistPageClient() {
                 </button>
 
                 <Link href={`/products/${item.product.id}`}>
-                  <div className="relative h-48 bg-gray-50">
-                    <img
-                      src={item.product.images?.[0] || '/placeholder.png'}
+                  <div className="relative h-48 bg-gray-50 overflow-hidden">
+                    <Image
+                      src={item.product.images?.[0] || '/placeholder.svg'}
                       alt={item.product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      priority={false}
                     />
                     {item.product.originalPrice && (
-                      <div className="absolute bottom-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                      <div className="absolute bottom-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold z-10">
                         -{calculateDiscount(item.product.price, item.product.originalPrice)}%
                       </div>
                     )}

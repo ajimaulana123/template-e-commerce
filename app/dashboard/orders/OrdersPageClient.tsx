@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Package, Eye, RefreshCw } from 'lucide-react'
+import OrdersPageSkeleton from '@/components/skeletons/OrdersPageSkeleton'
 
 interface Order {
   id: string
@@ -132,12 +133,7 @@ export default function OrdersPageClient() {
   }
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
+    return <OrdersPageSkeleton />
   }
 
   return (

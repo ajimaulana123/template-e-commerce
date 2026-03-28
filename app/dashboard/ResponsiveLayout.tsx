@@ -74,7 +74,7 @@ export default function ResponsiveLayout({
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 32px, 40px"
-                      unoptimized
+                      priority={false}
                     />
                   </div>
                 ) : (

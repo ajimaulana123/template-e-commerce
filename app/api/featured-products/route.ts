@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-
-// Cache configuration
-const CACHE_DURATION = 60 * 5 // 5 minutes in seconds
-let cachedData: any = null
-let cacheTimestamp: number = 0
+import { getCache, setCache, cacheKeys, cacheTTL } from '@/lib/cache'
 
 export async function GET() {
   try {
-    // Return cached data if still valid
-    const now = Date.now()
-    if (cachedData && (now - cacheTimestamp) < CACHE_DURATION * 1000) {
+    // Check cache first
+    const cacheKey = cacheKeys.featuredProducts()
+    const cachedData = getCache(cacheKey)
+    
+    if (cachedData) {
       return NextResponse.json(cachedData, {
         headers: {
-          'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`
+          'Cache-Control': `public, s-maxage=${cacheTTL.featuredProducts}, stale-while-revalidate=${cacheTTL.featuredProducts * 2}`,
+          'X-Cache': 'HIT'
         }
       })
     }
@@ -89,16 +88,17 @@ export async function GET() {
         image: newArrival.images?.[0] || '/placeholder.png',
         category: newArrival.category.name,
         createdAt: newArrival.createdAt
-      } : null
+      } : null,
+      lastUpdated: new Date().toISOString()
     }
 
-    // Update cache
-    cachedData = responseData
-    cacheTimestamp = Date.now()
+    // Cache the result
+    setCache(cacheKey, responseData, cacheTTL.featuredProducts)
 
     return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': `public, s-maxage=${CACHE_DURATION}, stale-while-revalidate=${CACHE_DURATION * 2}`
+        'Cache-Control': `public, s-maxage=${cacheTTL.featuredProducts}, stale-while-revalidate=${cacheTTL.featuredProducts * 2}`,
+        'X-Cache': 'MISS'
       }
     })
   } catch (error) {
