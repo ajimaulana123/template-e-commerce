@@ -3,27 +3,13 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
+import { EnhancedButton } from '@/components/ui/enhanced-button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { useEnhancedToast } from '@/components/ui/enhanced-toast'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, MapPin, CreditCard, Truck } from 'lucide-react'
-import { getCart } from '@/lib/cart'
-
-interface CartItem {
-  id: string
-  quantity: number
-  product: {
-    id: string
-    name: string
-    price: number
-    originalPrice: number | null
-    images: string[]
-    stock: number
-    category: {
-      name: string
-    }
-  }
-}
+import { ArrowLeft, MapPin, CreditCard, Truck, ShoppingBag, CheckCircle2 } from 'lucide-react'
+import { useCart } from '@/lib/hooks/useCart'
 
 interface ShippingAddress {
   fullName: string
@@ -35,8 +21,7 @@ interface ShippingAddress {
 }
 
 export default function CheckoutPageClient() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { items: cartItems, loading } = useCart()
   const [processing, setProcessing] = useState(false)
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: '',
@@ -47,24 +32,7 @@ export default function CheckoutPageClient() {
     province: ''
   })
   const [paymentMethod, setPaymentMethod] = useState('cod')
-
-  useEffect(() => {
-    fetchCart()
-  }, [])
-
-  const fetchCart = async () => {
-    try {
-      setLoading(true)
-      const cart = await getCart()
-      if (cart) {
-        setCartItems(cart)
-      }
-    } catch (error) {
-      // Silent fail - failed to fetch cart
-    } finally {
-      setLoading(false)
-    }
-  }
+  const toast = useEnhancedToast()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -97,7 +65,7 @@ export default function CheckoutPageClient() {
   const handleCheckout = async () => {
     // Validate form
     if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city) {
-      alert('Please fill in all required shipping information')
+      toast.warning('Missing information', 'Please fill in all required shipping information')
       return
     }
 
@@ -123,11 +91,15 @@ export default function CheckoutPageClient() {
         throw new Error(data.error || 'Failed to place order')
       }
 
+      toast.success('Order placed successfully!', 'Redirecting to confirmation page...')
+      
       // Redirect to order confirmation page
-      window.location.href = `/orders/${data.order.id}/confirmation`
+      setTimeout(() => {
+        window.location.href = `/orders/${data.order.id}/confirmation`
+      }, 1000)
       
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
+      toast.error('Failed to place order', error instanceof Error ? error.message : 'Please try again')
     } finally {
       setProcessing(false)
     }
@@ -152,29 +124,61 @@ export default function CheckoutPageClient() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
-        <p className="text-gray-600 mb-6">Add some products to proceed with checkout</p>
-        <Link href="/products">
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            Continue Shopping
-          </Button>
-        </Link>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <EmptyState
+          icon={ShoppingBag}
+          title="Your cart is empty"
+          description="Add some products to proceed with checkout"
+          action={{
+            label: 'Browse Products',
+            onClick: () => window.location.href = '/products',
+            variant: 'primary'
+          }}
+        />
       </div>
     )
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center space-x-4 mb-8">
+      {/* Header with Progress */}
+      <div className="mb-8">
         <Link href="/cart">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+          <EnhancedButton 
+            variant="ghost" 
+            size="sm"
+            leftIcon={<ArrowLeft className="w-4 h-4" />}
+            className="mb-4"
+          >
             Back to Cart
-          </Button>
+          </EnhancedButton>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+        
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+        
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-center space-x-4 mb-8">
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <span className="ml-2 text-sm font-medium text-gray-900">Cart</span>
+          </div>
+          <div className="w-16 h-0.5 bg-blue-500"></div>
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+              2
+            </div>
+            <span className="ml-2 text-sm font-medium text-blue-600">Checkout</span>
+          </div>
+          <div className="w-16 h-0.5 bg-gray-300"></div>
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center font-semibold">
+              3
+            </div>
+            <span className="ml-2 text-sm font-medium text-gray-500">Confirmation</span>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -361,13 +365,16 @@ export default function CheckoutPageClient() {
             </div>
 
             {/* Checkout Button */}
-            <Button 
+            <EnhancedButton 
+              variant="primary"
+              size="lg"
+              fullWidth
               onClick={handleCheckout}
-              disabled={processing}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+              loading={processing}
+              leftIcon={<CheckCircle2 className="w-5 h-5" />}
             >
               {processing ? 'Processing...' : `Place Order - ${formatPrice(calculateTotal())}`}
-            </Button>
+            </EnhancedButton>
             
             <p className="text-xs text-gray-500 text-center mt-3">
               By placing your order, you agree to our Terms of Service and Privacy Policy

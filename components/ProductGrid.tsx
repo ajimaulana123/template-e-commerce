@@ -1,6 +1,8 @@
+import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface Product {
   id?: string
@@ -16,27 +18,85 @@ interface Product {
 
 interface ProductGridProps {
   title: string
-  icon?: string
+  icon?: React.ReactNode
   products: Product[]
-  columns?: number
+  columns?: number | {
+    mobile: number
+    tablet: number
+    desktop: number
+  }
+  gap?: {
+    mobile: number
+    tablet: number
+    desktop: number
+  }
 }
 
-export default function ProductGrid({ title, icon, products, columns = 4 }: ProductGridProps) {
+export default function ProductGrid({ 
+  title, 
+  icon, 
+  products, 
+  columns,
+  gap = { mobile: 16, tablet: 20, desktop: 24 }
+}: ProductGridProps) {
+  // Normalize columns to responsive object for backward compatibility
+  const responsiveColumns = typeof columns === 'number' 
+    ? { mobile: 2, tablet: 3, desktop: columns }
+    : columns || { mobile: 2, tablet: 3, desktop: 4 }
+
+  // Build grid column classes based on responsive configuration
+  const gridColsClasses = cn(
+    // Mobile columns
+    responsiveColumns.mobile === 1 && "grid-cols-1",
+    responsiveColumns.mobile === 2 && "grid-cols-2",
+    responsiveColumns.mobile === 3 && "grid-cols-3",
+    // Tablet columns (md breakpoint: 768px)
+    responsiveColumns.tablet === 2 && "md:grid-cols-2",
+    responsiveColumns.tablet === 3 && "md:grid-cols-3",
+    responsiveColumns.tablet === 4 && "md:grid-cols-4",
+    // Desktop columns (lg breakpoint: 1024px)
+    responsiveColumns.desktop === 2 && "lg:grid-cols-2",
+    responsiveColumns.desktop === 3 && "lg:grid-cols-3",
+    responsiveColumns.desktop === 4 && "lg:grid-cols-4",
+    responsiveColumns.desktop === 5 && "lg:grid-cols-5",
+    responsiveColumns.desktop === 6 && "lg:grid-cols-6"
+  )
+
+  // Build gap classes based on responsive configuration
+  const gapClasses = cn(
+    // Mobile gap (16px = gap-4)
+    gap.mobile === 12 && "gap-3",
+    gap.mobile === 16 && "gap-4",
+    gap.mobile === 20 && "gap-5",
+    // Tablet gap (20px = gap-5)
+    gap.tablet === 16 && "md:gap-4",
+    gap.tablet === 20 && "md:gap-5",
+    gap.tablet === 24 && "md:gap-6",
+    // Desktop gap (24px = gap-6)
+    gap.desktop === 20 && "lg:gap-5",
+    gap.desktop === 24 && "lg:gap-6",
+    gap.desktop === 32 && "lg:gap-8"
+  )
+
   return (
     <section className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-900 flex items-center">
-          {icon && <i className={`${icon} mr-2 text-blue-600`}></i>}
+        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          {icon}
           {title}
         </h2>
-        <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-          Lihat Semua <i className="fas fa-chevron-right ml-1 text-xs"></i>
+        <a 
+          href="/products" 
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          aria-label={`View all ${title} products`}
+        >
+          Lihat Semua <i className="fas fa-chevron-right ml-1 text-xs" aria-hidden="true"></i>
         </a>
       </div>
-      <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
+      <div className={cn("grid", gridColsClasses, gapClasses)}>
         {products.map((product, i) => {
           const ProductCard = (
-            <Card key={i} className="hover:shadow-md transition-all cursor-pointer group border border-gray-200">
+            <Card key={i} className="hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group border border-gray-200">
               <CardHeader className="p-0">
                 <div className="relative overflow-hidden bg-gray-50 h-48">
                   <Image 
@@ -76,7 +136,11 @@ export default function ProductGrid({ title, icon, products, columns = 4 }: Prod
 
           // If product has ID, wrap with Link, otherwise return as is
           return product.id ? (
-            <Link key={i} href={`/products/${product.id}`}>
+            <Link 
+              key={i} 
+              href={`/products/${product.id}`}
+              aria-label={`View details for ${product.name}`}
+            >
               {ProductCard}
             </Link>
           ) : ProductCard

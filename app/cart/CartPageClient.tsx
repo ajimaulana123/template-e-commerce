@@ -2,14 +2,19 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
+import { EnhancedButton } from '@/components/ui/enhanced-button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { useEnhancedToast } from '@/components/ui/enhanced-toast'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Minus, Trash2, ShoppingBag, MessageCircle } from 'lucide-react'
+import { Plus, Minus, Trash2, ShoppingBag, MessageCircle, ShoppingCart } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import { generateCartWhatsAppMessage, openWhatsApp } from '@/lib/whatsapp'
+import { useRouter } from 'next/navigation'
 
 export default function CartPageClient() {
   const { items: cartItems, loading, syncing, updateQuantity, removeFromCart: removeItem, totalPrice } = useCart()
+  const toast = useEnhancedToast()
+  const router = useRouter()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -21,12 +26,21 @@ export default function CartPageClient() {
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return
-    await updateQuantity(productId, newQuantity)
+    try {
+      await updateQuantity(productId, newQuantity)
+      toast.success('Cart updated', 'Quantity has been updated')
+    } catch (error) {
+      toast.error('Failed to update quantity', 'Please try again')
+    }
   }
 
   const handleRemoveItem = async (productId: string) => {
-    if (!confirm('Remove this item from cart?')) return
-    await removeItem(productId)
+    try {
+      await removeItem(productId)
+      toast.success('Item removed', 'Product has been removed from your cart')
+    } catch (error) {
+      toast.error('Failed to remove item', 'Please try again')
+    }
   }
 
   const calculateSubtotal = () => {
@@ -88,261 +102,199 @@ export default function CartPageClient() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="text-center py-12">
-        <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-600 mb-2">Your cart is empty</h3>
-        <p className="text-gray-500 mb-6">Add some products to get started</p>
-        <Link href="/products">
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            Continue Shopping
-          </Button>
-        </Link>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        title="Your cart is empty"
+        description="Start shopping to add items to your cart and enjoy our products"
+        action={{
+          label: 'Browse Products',
+          onClick: () => router.push('/products'),
+          variant: 'primary'
+        }}
+      />
     )
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Shopping Cart ({cartItems.length} items)</h1>
+    <div className="max-w-6xl mx-auto pb-20 px-4 sm:px-6 lg:px-8">
+      {/* Header dengan Glassmorphism effect */}
+      <div className="flex items-center justify-between mb-8 pt-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Keranjang Belanja
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Anda memiliki <span className="font-semibold text-emerald-600">{cartItems.length} produk</span> di keranjang
+          </p>
+        </div>
+        <EnhancedButton 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => router.push('/products')}
+          className="text-emerald-600 hover:bg-emerald-50 font-medium hidden sm:flex"
+        >
+          Lanjut Belanja
+        </EnhancedButton>
+      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* List Produk (Lef Side) */}
+        <div className="lg:col-span-8 space-y-4">
           {cartItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-              {/* Mobile Layout - Vertical */}
-              <div className="block sm:hidden">
-                <div className="flex items-start justify-between mb-3">
-                  <Link href={`/products/${item.productId}`}>
-                    <h3 className="font-semibold text-sm text-gray-900 hover:text-blue-600 cursor-pointer line-clamp-2 pr-2">
-                      {item.product.name}
-                    </h3>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveItem(item.productId)}
-                    disabled={syncing}
-                    className="text-red-500 hover:text-red-700 p-1 h-auto flex-shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+            <div 
+              key={item.id} 
+              className="group bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden"
+            >
+              {/* Dekorasi Hover */}
+              <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="flex gap-4 sm:gap-6">
+                {/* Image Section */}
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0">
+                  <Image
+                    src={item.product.images?.[0] || '/placeholder.svg'}
+                    alt={item.product.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    sizes="(max-width: 768px) 96px, 128px"
+                  />
                 </div>
 
-                <div className="flex gap-3 mb-3">
-                  <Link href={`/products/${item.productId}`} className="flex-shrink-0">
-                    <div className="relative w-20 h-20 rounded overflow-hidden bg-gray-100">
-                      <Image
-                        src={item.product.images?.[0] || '/placeholder.svg'}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover cursor-pointer hover:opacity-80"
-                        sizes="80px"
-                        priority={false}
-                      />
-                    </div>
-                  </Link>
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-600 mb-2">{item.product.category?.name || 'Product'}</p>
-                    <div className="mb-2">
-                      <div className="text-lg font-bold text-gray-900">
-                        {formatPrice(item.product.price)}
-                      </div>
-                      {item.product.originalPrice && (
-                        <div className="text-xs text-gray-500 line-through">
-                          {formatPrice(item.product.originalPrice)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-3 border-t">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
-                      disabled={item.quantity <= 1 || syncing}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </Button>
-                    <span className="px-3 py-1 border rounded text-center min-w-[44px] text-sm font-medium">
-                      {syncing ? '...' : item.quantity}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
-                      disabled={item.quantity >= item.product.stock || syncing}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">Subtotal</p>
-                    <p className="font-bold text-base text-gray-900">
-                      {formatPrice(item.product.price * item.quantity)}
-                    </p>
-                  </div>
-                </div>
-
-                {item.quantity >= item.product.stock && (
-                  <p className="text-xs text-red-500 mt-2">
-                    Only {item.product.stock} available
-                  </p>
-                )}
-              </div>
-
-              {/* Desktop Layout - Horizontal */}
-              <div className="hidden sm:flex gap-4">
-                <Link href={`/products/${item.productId}`} className="flex-shrink-0">
-                  <div className="relative w-20 h-20 rounded overflow-hidden bg-gray-100">
-                    <Image
-                      src={item.product.images?.[0] || '/placeholder.svg'}
-                      alt={item.product.name}
-                      fill
-                      className="object-cover cursor-pointer hover:opacity-80"
-                      sizes="80px"
-                      priority={false}
-                    />
-                  </div>
-                </Link>
-
-                <div className="flex-1 min-w-0 flex flex-col">
-                  <div className="flex justify-between items-start gap-2 mb-2">
-                    <div className="flex-1 min-w-0">
+                {/* Content Section */}
+                <div className="flex-1 flex flex-col min-w-0">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0 pr-4">
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                        {item.product.category?.name || 'Katalog'}
+                      </p>
                       <Link href={`/products/${item.productId}`}>
-                        <h3 className="font-semibold text-base text-gray-900 hover:text-blue-600 cursor-pointer line-clamp-2 break-words">
+                        <h3 className="font-bold text-base sm:text-lg text-slate-800 hover:text-emerald-600 transition-colors line-clamp-1">
                           {item.product.name}
                         </h3>
                       </Link>
-                      <p className="text-sm text-gray-600 mt-0.5">{item.product.category?.name || 'Product'}</p>
                     </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button 
                       onClick={() => handleRemoveItem(item.productId)}
-                      disabled={syncing}
-                      className="text-red-500 hover:text-red-700 p-1 h-auto flex-shrink-0 -mt-1"
+                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </Button>
+                    </button>
                   </div>
 
-                  <div className="mb-2">
-                    <div className="flex flex-wrap items-baseline gap-1">
-                      <span className="text-lg font-bold text-gray-900">
-                        {formatPrice(item.product.price)}
+                  {/* Price */}
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-lg font-black text-slate-900">
+                      {formatPrice(item.product.price)}
+                    </span>
+                    {item.product.originalPrice && (
+                      <span className="text-xs text-slate-400 line-through">
+                        {formatPrice(item.product.originalPrice)}
                       </span>
-                      {item.product.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">
-                          {formatPrice(item.product.originalPrice)}
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 mt-auto">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
+                  {/* Quantity Controls - Repositioned for better UX */}
+                  <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
+                    <div className="flex items-center bg-slate-50 rounded-lg p-1 border border-slate-100">
+                      <button
                         onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                         disabled={item.quantity <= 1 || syncing}
-                        className="h-8 w-8 p-0"
+                        className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-emerald-600 disabled:opacity-30 transition-colors"
                       >
                         <Minus className="w-3 h-3" />
-                      </Button>
-                      <span className="px-3 py-1 border rounded text-center min-w-[44px] text-sm font-medium">
+                      </button>
+                      <span className="w-10 text-center font-bold text-sm text-slate-800">
                         {syncing ? '...' : item.quantity}
                       </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <button
                         onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                         disabled={item.quantity >= item.product.stock || syncing}
-                        className="h-8 w-8 p-0"
+                        className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-emerald-600 disabled:opacity-30 transition-colors"
                       >
                         <Plus className="w-3 h-3" />
-                      </Button>
+                      </button>
                     </div>
-
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs text-gray-500">Subtotal</p>
-                      <p className="font-bold text-base text-gray-900 whitespace-nowrap">
+                    
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">Subtotal</p>
+                      <p className="font-bold text-emerald-600 text-base">
                         {formatPrice(item.product.price * item.quantity)}
                       </p>
                     </div>
                   </div>
-
-                  {item.quantity >= item.product.stock && (
-                    <p className="text-xs text-red-500 mt-2">
-                      Only {item.product.stock} available
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm lg:sticky lg:top-6">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Order Summary</h3>
+        {/* Order Summary (Right Side) */}
+        <div className="lg:col-span-4 lg:sticky lg:top-24">
+          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl shadow-slate-200">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              Ringkasan Pesanan
+            </h3>
             
-            <div className="space-y-2 sm:space-y-3 mb-4">
-              <div className="flex justify-between text-sm sm:text-base">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">{formatPrice(calculateSubtotal())}</span>
+            <div className="space-y-4">
+              <div className="flex justify-between text-slate-400 text-sm">
+                <span>Subtotal Produk</span>
+                <span className="text-white font-semibold">{formatPrice(calculateSubtotal())}</span>
               </div>
-              <div className="flex justify-between text-sm sm:text-base">
-                <span className="text-gray-600">Shipping</span>
-                <span className="font-medium">
+              <div className="flex justify-between text-slate-400 text-sm">
+                <span>Biaya Pengiriman</span>
+                <span className="text-white font-semibold">
                   {calculateSubtotal() > 500000 ? (
-                    <span className="text-green-600">Free</span>
+                    <span className="text-emerald-400 uppercase text-xs font-bold tracking-widest">Gratis</span>
                   ) : (
                     formatPrice(15000)
                   )}
                 </span>
               </div>
+              
               {calculateSubtotal() <= 500000 && (
-                <p className="text-xs sm:text-sm text-gray-500">
-                  Add {formatPrice(500000 - calculateSubtotal())} more for free shipping
-                </p>
-              )}
-              <div className="border-t pt-2 sm:pt-3">
-                <div className="flex justify-between text-base sm:text-lg font-bold">
-                  <span>Total</span>
-                  <span>{formatPrice(calculateTotal())}</span>
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                  <p className="text-[11px] text-emerald-400 leading-snug">
+                    Beli <span className="font-bold">{formatPrice(500000 - calculateSubtotal())}</span> lagi untuk mendapatkan <span className="font-bold italic">Gratis Ongkir!</span>
+                  </p>
                 </div>
+              )}
+
+              <div className="h-px bg-slate-800 my-4" />
+              
+              <div className="flex justify-between items-end pb-6">
+                <span className="text-slate-400 text-sm">Total Pembayaran</span>
+                <span className="text-2xl font-black text-emerald-400 tracking-tight">
+                  {formatPrice(calculateTotal())}
+                </span>
               </div>
             </div>
 
-            <Link href="/checkout">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-2 sm:mb-3 h-10 sm:h-auto text-sm sm:text-base">
-                Proceed to Checkout
-              </Button>
-            </Link>
+            <div className="space-y-3">
+              <EnhancedButton 
+                variant="primary"
+                fullWidth
+                size="lg"
+                onClick={() => router.push('/checkout')}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-6 font-bold text-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
+              >
+                Checkout Sekarang
+              </EnhancedButton>
 
-            <Button 
-              className="w-full bg-green-600 hover:bg-green-700 text-white mb-2 sm:mb-3 h-10 sm:h-auto text-sm sm:text-base"
-              onClick={handleOrderWhatsApp}
-            >
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Order via WhatsApp
-            </Button>
+              <EnhancedButton 
+                variant="outline"
+                fullWidth
+                size="lg"
+                onClick={handleOrderWhatsApp}
+                className="bg-transparent border-slate-700 hover:bg-slate-800 text-white rounded-xl py-6 font-semibold"
+                leftIcon={<MessageCircle className="w-5 h-5 text-emerald-500" />}
+              >
+                Order via WhatsApp
+              </EnhancedButton>
+            </div>
             
-            <Link href="/products">
-              <Button variant="outline" className="w-full h-10 sm:h-auto text-sm sm:text-base">
-                Continue Shopping
-              </Button>
-            </Link>
+            <p className="text-[10px] text-slate-500 text-center mt-6 uppercase tracking-widest font-medium">
+              Sistem Pembayaran Terenkripsi & Aman
+            </p>
           </div>
         </div>
       </div>

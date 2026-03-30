@@ -1,6 +1,7 @@
-import { useCart } from '@/lib/hooks/useCart'
+import { useCartStore } from '@/lib/stores/cart-store'
 
 export const useCartCount = () => {
-  const { totalItems } = useCart()
+  // Subscribe directly to store for reactive updates
+  const totalItems = useCartStore((state) => state.totalItems())
   return totalItems
 }

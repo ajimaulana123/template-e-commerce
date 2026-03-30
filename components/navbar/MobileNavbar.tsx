@@ -1,3 +1,5 @@
+'use client'
+
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MobileLogo } from './Logo'
@@ -5,6 +7,7 @@ import { SearchBar } from './SearchBar'
 import { CartButton } from './CartButton'
 import { WishlistButton } from './WishlistButton'
 import { UserMenu } from './UserMenu'
+import { cn } from '@/lib/utils'
 import type { User } from './types'
 
 interface MobileNavbarProps {
@@ -25,33 +28,48 @@ export const MobileNavbar = ({
   onCategoryClick
 }: MobileNavbarProps) => {
   return (
-    <div className="block md:hidden">
-      <div className="px-3 py-2">
-        {/* Top row - Menu, Logo, Cart, User */}
-        <div className="flex items-center justify-between mb-2">
-          {/* Left - Menu and Logo */}
-          <div className="flex items-center space-x-2">
+    <div className="block md:hidden w-full bg-white/95 backdrop-blur-sm">
+      <div className="px-4 py-3">
+        {/* Top row - Navigation & Branding */}
+        <div className="flex items-center justify-between mb-3">
+          
+          {/* Left - Menu Toggle & Logo */}
+          <div className="flex items-center gap-3">
             <Button 
               onClick={onCategoryClick}
               variant="ghost" 
-              size="icon-sm" 
-              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+              size="icon" 
+              className="w-10 h-10 rounded-xl bg-gray-50 text-green-600 hover:bg-green-50 active:scale-90 transition-all"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </Button>
-            <MobileLogo />
+            <div className="scale-95 origin-left">
+              <MobileLogo />
+            </div>
           </div>
 
-          {/* Right - Wishlist, Cart and User */}
-          <div className="flex items-center space-x-3">
-            <WishlistButton count={wishlistCount} mobile />
-            <CartButton count={cartCount} mobile />
-            <UserMenu user={user} loading={loading} onLogout={onLogout} mobile />
+          {/* Right - Interaction Icons */}
+         <div className="flex items-center gap-3 md:gap-4"> 
+            <div className="transition-transform active:scale-90">
+              <WishlistButton count={wishlistCount} mobile />
+            </div>
+            <div className="transition-transform active:scale-90">
+              <CartButton count={cartCount} mobile />
+            </div>
+            
+            {/* UserMenu dikasih margin kiri dikit biar pemisahnya jelas */}
+            <div className="ml-1 pl-2 border-l border-gray-100 h-6 flex items-center">
+              <UserMenu user={user} loading={loading} onLogout={onLogout} mobile />
+            </div>
           </div>
         </div>
 
-        {/* Bottom row - Search */}
-        <SearchBar />
+        {/* Bottom row - Search Bar Area */}
+        <div className="relative group">
+          <SearchBar className="w-full" />
+          {/* Efek hiasan halus di bawah search bar mobile */}
+          <div className="absolute -bottom-1 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-green-500/10 to-transparent" />
+        </div>
       </div>
     </div>
   )

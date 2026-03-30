@@ -8,43 +8,49 @@ import { BANNER_CONFIGS } from './constants'
 export default function ScrollBanner() {
   const isVisible = useScrollVisibility()
 
+  // Gunakan satu container utama dengan logic responsive di dalamnya
+  // untuk menghindari duplikasi DOM yang tidak perlu
   return (
     <div
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out',
-        // No bottom border to connect seamlessly with navbar
-        'shadow-sm',
-        isVisible ? 'translate-y-0' : '-translate-y-full'
+        // Layout & Animation
+        'fixed top-0 left-0 right-0 z-[60] transition-all duration-500 ease-in-out transform',
+        // Styling: Dark mode look biasanya terasa lebih premium untuk banner promo
+        'bg-neutral-900 text-white shadow-sm',
+        // Smooth slide up/down logic
+        isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       )}
     >
-      {/* Extra Large Desktop (2xl+) */}
-      <div className="hidden 2xl:block">
-        <BannerContent config={BANNER_CONFIGS['2xl']} linkSize="lg" />
-      </div>
+      <div className="relative overflow-hidden group">
+        {/* Subtle decorative gradient background (Opsional untuk estetika) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 via-transparent to-purple-600/20 opacity-50" />
 
-      {/* Large Desktop (xl-2xl) */}
-      <div className="hidden xl:block 2xl:hidden">
-        <BannerContent config={BANNER_CONFIGS.xl} linkSize="md" />
-      </div>
+        <div className="relative mx-auto flex items-center justify-center min-h-[40px] md:min-h-[44px]">
+          {/* Responsive Banner Logic */}
+          <div className="2xl:block hidden">
+            <BannerContent config={BANNER_CONFIGS['2xl']} linkSize="lg" />
+          </div>
+          
+          <div className="xl:block 2xl:hidden hidden">
+            <BannerContent config={BANNER_CONFIGS.xl} linkSize="md" />
+          </div>
 
-      {/* Medium Desktop (lg-xl) */}
-      <div className="hidden lg:block xl:hidden">
-        <BannerContent config={BANNER_CONFIGS.lg} linkSize="md" />
-      </div>
+          <div className="lg:block xl:hidden hidden">
+            <BannerContent config={BANNER_CONFIGS.lg} linkSize="md" />
+          </div>
 
-      {/* Tablet (md-lg) */}
-      <div className="hidden md:block lg:hidden">
-        <BannerContent config={BANNER_CONFIGS.md} containerClass="px-4" linkSize="md" />
-      </div>
+          <div className="md:block lg:hidden hidden px-4">
+            <BannerContent config={BANNER_CONFIGS.md} linkSize="md" />
+          </div>
 
-      {/* Small Mobile (sm-md) */}
-      <div className="hidden sm:block md:hidden">
-        <BannerContent config={BANNER_CONFIGS.sm} containerClass="px-4" linkSize="sm" />
-      </div>
+          <div className="sm:block md:hidden hidden px-4">
+            <BannerContent config={BANNER_CONFIGS.sm} linkSize="sm" />
+          </div>
 
-      {/* Extra Small Mobile (<sm) */}
-      <div className="block sm:hidden">
-        <BannerContent config={BANNER_CONFIGS.xs} containerClass="px-3" linkSize="sm" />
+          <div className="block sm:hidden px-3">
+            <BannerContent config={BANNER_CONFIGS.xs} linkSize="sm" />
+          </div>
+        </div>
       </div>
     </div>
   )
