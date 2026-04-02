@@ -13,6 +13,8 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -97,15 +99,25 @@ export default function RegisterPage() {
                 <i className="fas fa-lock text-green-600" />
                 Password
               </label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Minimal 6 karakter"
-                required
-                minLength={6}
-                className="h-11 text-base border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Minimal 6 karakter"
+                  required
+                  minLength={6}
+                  className="h-11 text-base border-gray-300 focus:border-green-500 focus:ring-green-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                >
+                  <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -113,15 +125,25 @@ export default function RegisterPage() {
                 <i className="fas fa-lock text-green-600" />
                 Konfirmasi Password
               </label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Ulangi password Anda"
-                required
-                minLength={6}
-                className="h-11 text-base border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Ulangi password Anda"
+                  required
+                  minLength={6}
+                  className="h-11 text-base border-gray-300 focus:border-green-500 focus:ring-green-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={showConfirmPassword ? "Sembunyikan password" : "Tampilkan password"}
+                >
+                  <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`} />
+                </button>
+              </div>
             </div>
 
             <Button 

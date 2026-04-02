@@ -31,6 +31,13 @@ const nextConfig = {
   serverExternalPackages: ['@prisma/client', 'prisma'],
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    // Enable aggressive prefetching
+    optimisticClientCache: true,
+  },
+  // Optimize for faster navigation
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
 }
 

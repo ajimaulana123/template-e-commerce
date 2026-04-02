@@ -25,15 +25,20 @@ if (process.env.NODE_ENV !== 'production') {
 /**
  * Graceful Shutdown Pattern
  * Disconnect database saat process exit
+ * Only register listeners once to prevent memory leaks
  */
-const gracefulShutdown = async () => {
-  await prisma.$disconnect()
-  process.exit(0)
-}
+if (!globalThis.prismaGlobal) {
+  const gracefulShutdown = async () => {
+    await prisma.$disconnect()
+    process.exit(0)
+  }
 
-process.on('beforeExit', gracefulShutdown)
-process.on('SIGINT', gracefulShutdown)
-process.on('SIGTERM', gracefulShutdown)
+  // Only add listeners if they haven't been added yet
+  process.setMaxListeners(15) // Increase limit for development
+  process.on('beforeExit', gracefulShutdown)
+  process.on('SIGINT', gracefulShutdown)
+  process.on('SIGTERM', gracefulShutdown)
+}
 
 /**
  * Retry Pattern dengan Exponential Backoff
